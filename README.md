@@ -1,135 +1,150 @@
-# Assistant D&D MJ
+# 🎲 Assistant D&D MJ
 
-Une application Single Page Application pour assister les Maîtres de Jeu Donjons & Dragons, créée avec HTML5, Vanilla JavaScript et Web Components.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-brightgreen.svg)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Web Components](https://img.shields.io/badge/Web%20Components-v1-blue.svg)](https://www.webcomponents.org/)
+[![D&D 5E](https://img.shields.io/badge/D%26D-5E-red.svg)](https://www.dnd5eapi.co/)
 
-## Fonctionnalités
+Une Single Page Application moderne pour assister les Maîtres de Jeu Donjons & Dragons, construite avec HTML5, Vanilla JavaScript et Web Components.
 
-### 🔍 Recherche d'Équipement
+## ✨ Fonctionnalités
+
+### 🔍 **Recherche d'Équipement Avancée**
 - Recherche textuelle en temps réel dans toute la base de données D&D5E
 - Filtres par catégorie (armes, armures, outils, etc.)
-- Affichage détaillé des caractéristiques (dégâts, coût, poids, propriétés)
-- Système de favoris avec localStorage
+- Affichage détaillé : dégâts, coût, poids, propriétés
+- Conversion automatique (feet → mètres, livres → kg)
 
-### 🎲 Lanceur de Dés
-- Support de tous les types de dés D&D (d4, d6, d8, d10, d12, d20, d100)
-- Lancers personnalisés avec modificateurs
-- Historique des 50 derniers lancés
-- Animations et feedback visuel
+### ⭐ **Système de Favoris**
+- Sauvegarde locale persistante avec localStorage
+- Accès rapide aux équipements préférés
+- Gestion unificée de tous les favoris
 
-### 📱 Interface Responsive
+### 🎲 **Lanceur de Dés Complet**
+- Support complet : d4, d6, d8, d10, d12, d20, d100
+- Lancers personnalisés avec modificateurs multiples
+- Historique détaillé des 50 derniers jets
+- Animations fluides et feedback visuel immédiat
+
+### 📱 **Interface Responsive & Thématique**
 - Design adaptatif pour mobile, tablette et desktop
-- Thème médiéval fantaisie avec polices appropriées
-- Animations fluides et transitions
-- Accessibilité complète avec ARIA labels
+- Thème médiéval fantaisie avec polices Cinzel & Crimson Text
+- Animations CSS fluides et transitions élégantes
+- Accessibilité WCAG 2.1 AA complète
 
-## Architecture Technique
+## 🏗️ Architecture Technique
 
-### Web Components
-- `<dnd-header>` : Navigation avec routing
-- `<equipment-search>` : Barre de recherche avec filtres
-- `<equipment-card>` : Carte d'affichage d'équipement
-- `<dice-roller>` : Lanceur de dés interactif
+### **Web Components Modulaires**
+```javascript
+<dnd-header>          // Navigation avec routing SPA
+<equipment-search>    // Recherche avancée avec filtres
+<equipment-card>      // Affichage détaillé des équipements
+<dice-roller>         // Lanceur de dés interactif
+```
 
-### Services
-- **API Service** : Communication avec l'API D&D5E (https://www.dnd5eapi.co/api/2024/)
-- **Storage Manager** : Gestion du localStorage avec méthodes utilitaires
-- **Performance Monitor** : Optimisation et monitoring des performances
+### **Services Optimisés**
+- **API Service** : Communication intelligente avec D&D5E API
+- **Storage Manager** : Gestion complète du localStorage
+- **Performance Monitor** : Optimisation et monitoring en temps réel
 
-### Performance
-- Lazy loading des composants
-- Cache intelligent des requêtes API
-- Virtual scrolling pour grandes listes
-- Service Worker pour support offline
+### **Performance Native**
+- Cache intelligent des requêtes API (5 minutes TTL)
+- Lazy loading des composants et ressources
+- Support Service Worker pour usage offline
 
-## Utilisation
+## 🚀 Démarrage Rapide
 
-### Démarrage Rapide
-1. Clonez ou téléchargez les fichiers
-2. Servez le répertoire avec un serveur web local
-   ```bash
-   python -m http.server 8000
-   # ou
-   npx serve .
-   ```
-3. Ouvrez `http://localhost:8000` dans votre navigateur
+### **Prérequis**
+- Navigateur moderne (Chrome 54+, Firefox 63+, Safari 10.1+, Edge 79+)
+- Serveur web local (optionnel mais recommandé)
 
-### Navigation
-- **#equipment** : Page principale de recherche d'équipement
-- **#favorites** : Liste des équipements favoris
-- **#dice** : Lanceur de dés
+### **Installation**
+```bash
+# Clonez le dépôt
+git clone https://github.com/username/dnd-dm-assistant.git
+cd dnd-dm-assistant
 
-### Recherche d'Équipement
-1. Tapez le nom d'un équipement dans la barre de recherche
-2. Utilisez les filtres par catégorie pour affiner les résultats
-3. Cliquez sur "⭐ Favori" pour ajouter un équipement à vos favoris
-4. Cliquez sur "📋 Détails" pour voir les informations complètes
+# Lancez le serveur de développement
+npm run serve
 
-### Lanceur de Dés
-1. Cliquez sur un dé pour le lancer directement
-2. Utilisez le formulaire personnalisé pour des jets complexes
-3. Consultez l'historique en bas de la page
+# Ou manuellement
+python3 -m http.server 8000
+```
 
-## Structure des Fichiers
+**Ouvrez** `http://localhost:8000` dans votre navigateur
+
+## 🎯 Guide d'Utilisation
+
+### **Navigation SPA**
+- `#equipment` - Recherche principale d'équipement
+- `#favorites` - Équipements favoris enregistrés
+- `#dice` - Lanceur de dés avec historique
+
+### **Recherche d'Équipement**
+1. **Recherche textuelle** : Tapez le nom d'un équipement
+2. **Filtres avancés** : Sélectionnez une catégorie spécifique
+3. **Favoris** : Cliquez ⭐ pour sauvegarder
+4. **Détails** : Cliquez 📋 pour informations complètes
+
+### **Lanceur de Dés**
+- **Jet rapide** : Cliquez directement sur un dé
+- **Lancer personnalisé** : Configurez nombre de dés + modificateurs
+- **Historique** : Consultez les 50 derniers jets en bas de page
+
+## 📁 Structure du Projet
 
 ```
 dnd-dm-assistant/
-├── index.html                 # Page principale
-├── css/
-│   ├── main.css              # Styles principaux et thème
-│   └── components.css        # Styles des web components
-├── js/
-│   ├── app.js                # Logique principale et routing
-│   ├── api.js                # Service API D&D5E
-│   ├── components/
-│   │   ├── header.js         # Composant d'en-tête
-│   │   ├── equipment-search.js # Recherche d'équipement
-│   │   ├── equipment-card.js   # Carte d'équipement
+├── 📄 index.html                 # Point d'entrée SPA
+├── 🎨 css/
+│   ├── main.css              # Thème médiéval & styles globaux
+│   └── components.css        # Styles spécifiques des composants
+├── ⚡ js/
+│   ├── app.js                # Logique principale & routing
+│   ├── api.js                # Service D&D5E API
+│   ├── components/           # Web Components réutilisables
+│   │   ├── header.js         # Navigation principale
+│   │   ├── equipment-search.js # Moteur de recherche
+│   │   ├── equipment-card.js   # Cartes d'équipement
 │   │   └── dice-roller.js      # Lanceur de dés
-│   └── utils/
+│   └── utils/                # Services utilitaires
 │       ├── storage.js        # Gestion localStorage
-│       └── performance.js    # Outils performance
-└── README.md                 # Ce fichier
+│       └── performance.js    # Optimisations
+└── 📚 README.md                 # Cette documentation
 ```
 
-## Technologies Utilisées
+## 🛠️ Technologies Utilisées
 
-- **HTML5** : Semantic tags, Web Components
-- **CSS3** : Grid, Flexbox, Custom Properties, Animations
-- **JavaScript ES6+** : Modules, async/await, Custom Elements
-- **Web Components** : Shadow DOM, Custom Elements
-- **D&D5E API** : Base de données officielle
+| Technologie | Version | Utilisation |
+|-------------|---------|-------------|
+| **HTML5** | Semantic Tags | Structure & accessibilité |
+| **CSS3** | Grid/Flexbox | Layout responsive |
+| **JavaScript** | ES6+ Modules | Logique applicative |
+| **Web Components** | v1 API | Composants réutilisables |
+| **Shadow DOM** | v1 | Encapsulation |
+| **D&D5E API** | 2024 Edition | Base de données officielle |
 
-## Compatibilité Navigateur
+## 📊 Compatibilité Navigateur
 
-- Chrome 54+
-- Firefox 63+
-- Safari 10.1+
-- Edge 79+
+![Browser Support](https://badges.herokuapp.com/browsers?googlechrome=54&firefox=63&safari=10.1&edge=79)
 
-## Développement
+## 🤝 Contribuer
 
-### Outils Requis
-- Éditeur de code (VS Code recommandé)
-- Serveur web local pour développement
-- Navigateur moderne avec support ES6+
+Nous welcome les contributions ! Voir [CONTRIBUTING.md](CONTRIBUTING.md) pour les directives.
 
-### Bonnes Pratiques
-- Code modulaire avec imports/exports
-- Gestion d'erreurs robuste
-- Performance optimisée avec lazy loading
-- Accessibilité WCAG 2.1 AA
+### **Axes d'Amélioration**
+- [ ] Personnages PNJ/Joueur management
+- [ ] Générateur de combats et initiative
+- [ ] Integration audio (ambiance, sons de dés)
+- [ ] Mode offline complet avec Service Worker
+- [ ] Support multi-langues (i18n)
 
-### Extension
-L'application est conçue pour être facilement extensible :
-- Ajouter de nouveaux web components
-- Intégrer d'autres endpoints de l'API D&D5E
-- Personnaliser le thème via les variables CSS
-- Ajouter des fonctionnalités offline
+## 📝 License
 
-## License
-
-Ce projet est open source et disponible sous licence MIT.
+Ce projet est distribué sous [License MIT](LICENSE) - voir le fichier LICENSE pour détails.
 
 ---
 
-**Créé avec ❤️ pour les passionnés de Donjons & Dragons**
+**🎲 Créé avec ❤️ pour les passionnés de Donjons & Dragons** 
+
+*Built by gamers, for gamers.*
