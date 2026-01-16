@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dnd-assistant-v1';
+const CACHE_NAME = 'dnd-assistant-v2';
 const OFFLINE_URL = '/';
 
 const ASSETS_TO_CACHE = [
@@ -15,8 +15,8 @@ const ASSETS_TO_CACHE = [
   '/js/components/dice-roller.js',
   '/js/utils/storage.js',
   '/js/utils/performance.js',
-  '/icons/icon-192x192.svg',
-  '/icons/icon-512x512.svg'
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png'
 ];
 
 self.addEventListener('install', (event) => {
