@@ -3,6 +3,14 @@ import './components/equipment-search.js';
 import './components/equipment-card.js';
 
 class DnDApp {
+    static CURRENCY_FR = {
+        cp: { abbr: 'pc', name: 'cuivre', color: '#b87333' },
+        sp: { abbr: 'pa', name: 'argent', color: '#c0c0c0' },
+        ep: { abbr: 'pe', name: 'électrum', color: '#50c878' },
+        gp: { abbr: 'po', name: 'or', color: '#ffd700' },
+        pp: { abbr: 'pp', name: 'platine', color: '#e5e4e2' }
+    };
+
     constructor() {
         this.currentPage = 'equipment';
         this.header = null;
@@ -240,6 +248,14 @@ class DnDApp {
         return range;
     }
 
+    formatCurrency(unit) {
+        const currency = DnDApp.CURRENCY_FR[unit];
+        if (currency) {
+            return `${currency.abbr} <span style="color: ${currency.color}; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">●</span>`;
+        }
+        return unit;
+    }
+
     formatEquipmentDetails(equipment) {
         let html = '<div class="details-grid">';
         
@@ -255,7 +271,7 @@ class DnDApp {
             html += `
                 <div class="detail-section">
                     <h3>Coût</h3>
-                    <p>${equipment.cost.quantity} ${equipment.cost.unit}</p>
+                    <p>${equipment.cost.quantity} ${this.formatCurrency(equipment.cost.unit)}</p>
                 </div>
             `;
         }
