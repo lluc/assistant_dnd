@@ -1,4 +1,12 @@
 class EquipmentCard extends HTMLElement {
+    static CURRENCY_FR = {
+        cp: 'pc',  // Copper Piece → Pièce de cuivre
+        sp: 'pa',  // Silver Piece → Pièce d'argent
+        ep: 'pe',  // Electrum Piece → Pièce d'électrum
+        gp: 'po',  // Gold Piece → Pièce d'or
+        pp: 'pp'   // Platinum Piece → Pièce de platine
+    };
+
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
@@ -37,7 +45,7 @@ class EquipmentCard extends HTMLElement {
         if (!this.equipment) return;
 
         const equipment = this.equipment;
-        const cost = equipment.cost ? `${equipment.cost.quantity} ${equipment.cost.unit}` : 'Non spécifié';
+        const cost = equipment.cost ? `${equipment.cost.quantity} ${this.formatCurrency(equipment.cost.unit)}` : 'Non spécifié';
         const weight = equipment.weight ? `${equipment.weight} lb (${(equipment.weight * 0.453592).toFixed(1)} kg)` : 'Non spécifié';
         const damage = equipment.damage ? `${equipment.damage.damage_dice} ${equipment.damage.damage_type.name}` : null;
         const range = equipment.range ? this.formatRange(equipment.range) : null;
@@ -343,6 +351,10 @@ class EquipmentCard extends HTMLElement {
             return `Armure (${equipment.armor_category})`;
         }
         return 'Divers';
+    }
+
+    formatCurrency(unit) {
+        return EquipmentCard.CURRENCY_FR[unit] || unit;
     }
 
     convertFeetToMeters(feet) {
