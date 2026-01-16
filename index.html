@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Assistant pour Maître de Jeu Donjons & Dragons - Recherche d'équipement et outils de jeu">
+    <title>Assistant D&D MJ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="app">
+        <dnd-header></dnd-header>
+        
+        <main id="main-content">
+            <section id="equipment-section" class="page-section">
+                <div class="container">
+                    <h1 class="page-title">Recherche d'Équipement</h1>
+                    <equipment-search></equipment-search>
+                    <div id="equipment-results" class="results-grid"></div>
+                </div>
+            </section>
+            
+            <section id="favorites-section" class="page-section hidden">
+                <div class="container">
+                    <h1 class="page-title">Équipement Favori</h1>
+                    <div id="favorites-results" class="results-grid"></div>
+                </div>
+            </section>
+            
+            <section id="dice-section" class="page-section hidden">
+                <div class="container">
+                    <h1 class="page-title">Lanceur de Dés</h1>
+                    <dice-roller></dice-roller>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>&copy; 2024 Assistant D&D MJ - Créé avec les API D&D5E</p>
+        </footer>
+    </div>
+    
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <p>Recherche en cours...</p>
+    </div>
+    
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

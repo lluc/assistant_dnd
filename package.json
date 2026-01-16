@@ -1,0 +1,45 @@
+{
+  "name": "dnd-dm-assistant",
+  "version": "1.0.0",
+  "description": "Single Page Application pour assister les Maîtres de Jeu Donjons & Dragons",
+  "main": "index.html",
+  "scripts": {
+    "serve": "python3 -m http.server 8000",
+    "serve-https": "python3 -m http.server 8443 --bind localhost --cert localhost.pem --key localhost-key.pem",
+    "dev": "echo 'Development server started at http://localhost:8000' && npm run serve",
+    "build": "echo 'Build completed - static files ready'",
+    "deploy": "echo 'Deploy to static hosting service'",
+    "lint": "echo 'No linting configured for vanilla JS'",
+    "test": "echo 'No tests configured yet'"
+  },
+  "keywords": [
+    "dnd",
+    "dungeons-and-dragons",
+    "donjons-et-dragons",
+    "maître-de-jeu",
+    "dungeon-master",
+    "spa",
+    "vanilla-javascript",
+    "web-components",
+    "rpg",
+    "tabletop"
+  ],
+  "author": "Assistant D&D MJ",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/dnd-dm-assistant.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/dnd-dm-assistant/issues"
+  },
+  "homepage": "https://github.com/username/dnd-dm-assistant#readme",
+  "devDependencies": {},
+  "dependencies": {},
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie <= 11"
+  ]
+}
