@@ -1,10 +1,10 @@
 class EquipmentCard extends HTMLElement {
     static CURRENCY_FR = {
-        cp: 'pc',  // Copper Piece → Pièce de cuivre
-        sp: 'pa',  // Silver Piece → Pièce d'argent
-        ep: 'pe',  // Electrum Piece → Pièce d'électrum
-        gp: 'po',  // Gold Piece → Pièce d'or
-        pp: 'pp'   // Platinum Piece → Pièce de platine
+        cp: { abbr: 'pc', name: 'cuivre', color: '#b87333', icon: '🟤' },
+        sp: { abbr: 'pa', name: 'argent', color: '#c0c0c0', icon: '⚪' },
+        ep: { abbr: 'pe', name: 'électrum', color: '#50c878', icon: '🟢' },
+        gp: { abbr: 'po', name: 'or', color: '#ffd700', icon: '🟡' },
+        pp: { abbr: 'pp', name: 'platine', color: '#e5e4e2', icon: '⚪' }
     };
 
     constructor() {
@@ -155,6 +155,11 @@ class EquipmentCard extends HTMLElement {
                     font-family: 'Crimson Text', serif;
                     color: #2c1810;
                     font-weight: 600;
+                }
+
+                .currency-icon {
+                    font-size: 0.9em;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
                 }
 
                 .properties {
@@ -354,7 +359,11 @@ class EquipmentCard extends HTMLElement {
     }
 
     formatCurrency(unit) {
-        return EquipmentCard.CURRENCY_FR[unit] || unit;
+        const currency = EquipmentCard.CURRENCY_FR[unit];
+        if (currency) {
+            return `${currency.abbr} <span class="currency-icon" style="color: ${currency.color}">●</span>`;
+        }
+        return unit;
     }
 
     convertFeetToMeters(feet) {
