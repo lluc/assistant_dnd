@@ -1,22 +1,22 @@
-const CACHE_NAME = 'dnd-assistant-v2';
-const OFFLINE_URL = '/';
+const CACHE_NAME = 'dnd-assistant-v3';
+const OFFLINE_URL = './';
 
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/css/main.css',
-  '/css/components.css',
-  '/js/app.js',
-  '/js/api.js',
-  '/js/components/header.js',
-  '/js/components/equipment-search.js',
-  '/js/components/equipment-card.js',
-  '/js/components/dice-roller.js',
-  '/js/utils/storage.js',
-  '/js/utils/performance.js',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './css/main.css',
+  './css/components.css',
+  './js/app.js',
+  './js/api.js',
+  './js/components/header.js',
+  './js/components/equipment-search.js',
+  './js/components/equipment-card.js',
+  './js/components/dice-roller.js',
+  './js/utils/storage.js',
+  './js/utils/performance.js',
+  './icons/icon-192x192.png',
+  './icons/icon-512x512.png'
 ];
 
 self.addEventListener('install', (event) => {

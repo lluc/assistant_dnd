@@ -2,12 +2,12 @@
   "name": "Assistant D&D MJ",
   "short_name": "D&D Assistant",
   "description": "Assistant pour Maître de Jeu Donjons & Dragons - Recherche d'équipement, lanceur de dés et outils de jeu",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#1a1a2e",
   "theme_color": "#e63946",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": ".",
   "lang": "fr",
   "icons": [
     {
@@ -91,7 +91,7 @@
       "name": "Recherche Équipement",
       "short_name": "Équipement",
       "description": "Rechercher des équipements D&D5E",
-      "url": "/#equipment",
+      "url": "./#equipment",
       "icons": [
         {
           "src": "icons/icon-96x96.png",
@@ -103,7 +103,7 @@
       "name": "Lancer un Dés",
       "short_name": "Dés",
       "description": "Lancer des dés rapidement",
-      "url": "/#dice",
+      "url": "./#dice",
       "icons": [
         {
           "src": "icons/icon-96x96.png",
@@ -115,7 +115,7 @@
       "name": "Favoris",
       "short_name": "Favoris",
       "description": "Voir vos équipements favoris",
-      "url": "/#favorites",
+      "url": "./#favorites",
       "icons": [
         {
           "src": "icons/icon-96x96.png",
