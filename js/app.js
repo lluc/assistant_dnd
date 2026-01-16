@@ -13,6 +13,8 @@ class DnDApp {
         this.setupEventListeners();
         this.setupRouting();
         this.loadInitialPage();
+        this.registerServiceWorker();
+        this.setupPWAInstall();
     }
 
     setupEventListeners() {
@@ -326,6 +328,200 @@ class DnDApp {
             notification.style.opacity = '0';
             setTimeout(() => notification.remove(), 300);
         }, 3000);
+    }
+
+    registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then((registration) => {
+                    console.log('[App] Service Worker enregistré avec succès:', registration);
+                    
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                this.showNotification('Une nouvelle version est disponible', 'info');
+                            }
+                        });
+                    });
+                })
+                .catch((error) => {
+                    console.error('[App] Échec de l\'enregistrement du Service Worker:', error);
+                });
+        }
+    }
+
+    setupPWAInstall() {
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            this.showInstallPrompt();
+        });
+
+        window.addEventListener('appinstalled', () => {
+            console.log('[App] Application PWA installée avec succès');
+            deferredPrompt = null;
+        });
+    }
+
+    showInstallPrompt() {
+        const existingPrompt = document.querySelector('.pwa-install-prompt');
+        if (existingPrompt) return;
+
+        const prompt = document.createElement('div');
+        prompt.className = 'pwa-install-prompt';
+        
+        prompt.innerHTML = `
+            <div class="pwa-install-content">
+                <div class="pwa-install-icon">📱</div>
+                <div class="pwa-install-text">
+                    <h3>Installer cette application</h3>
+                    <p>Ajoutez l'Assistant D&D MJ à votre écran d'accueil</p>
+                </div>
+                <button class="pwa-install-btn">Installer</button>
+                <button class="pwa-install-close">×</button>
+            </div>
+        `;
+
+        prompt.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 2px solid #e63946;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            animation: slideUp 0.5s ease-out;
+            font-family: var(--font-secondary);
+        `;
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideUp {
+                from {
+                    transform: translateY(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .pwa-install-content {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .pwa-install-icon {
+                font-size: 2.5rem;
+                flex-shrink: 0;
+            }
+
+            .pwa-install-text {
+                flex: 1;
+            }
+
+            .pwa-install-text h3 {
+                color: #e63946;
+                margin: 0 0 0.25rem 0;
+                font-size: 1rem;
+                font-family: var(--font-primary);
+            }
+
+            .pwa-install-text p {
+                color: #ffffff;
+                margin: 0;
+                font-size: 0.875rem;
+                opacity: 0.8;
+            }
+
+            .pwa-install-btn {
+                background: #e63946;
+                color: white;
+                border: none;
+                padding: 0.75rem 1.5rem;
+                border-radius: 6px;
+                font-weight: 600;
+                cursor: pointer;
+                font-family: var(--font-secondary);
+                transition: all 0.3s;
+            }
+
+            .pwa-install-btn:hover {
+                background: #ff4d6d;
+                transform: translateY(-2px);
+            }
+
+            .pwa-install-close {
+                background: transparent;
+                color: #ffffff;
+                border: none;
+                font-size: 1.5rem;
+                cursor: pointer;
+                padding: 0.25rem 0.5rem;
+                opacity: 0.6;
+            }
+
+            .pwa-install-close:hover {
+                opacity: 1;
+            }
+
+            @media (max-width: 480px) {
+                .pwa-install-content {
+                    flex-direction: column;
+                    text-align: center;
+                }
+
+                .pwa-install-text {
+                    margin-bottom: 0.5rem;
+                }
+
+                .pwa-install-btn {
+                    width: 100%;
+                }
+            }
+        `;
+
+        document.head.appendChild(style);
+        document.body.appendChild(prompt);
+
+        const installBtn = prompt.querySelector('.pwa-install-btn');
+        const closeBtn = prompt.querySelector('.pwa-install-close');
+
+        installBtn.addEventListener('click', async () => {
+            const event = window.deferredPrompt;
+            if (event) {
+                event.prompt();
+                const { outcome } = await event.userChoice;
+                console.log('[App] Choix de l\'utilisateur:', outcome);
+                window.deferredPrompt = null;
+            }
+            prompt.remove();
+        });
+
+        closeBtn.addEventListener('click', () => {
+            prompt.remove();
+        });
+
+        window.deferredPrompt = window.deferredPrompt;
+        if (window.deferredPrompt) {
+            installBtn.addEventListener('click', async () => {
+                window.deferredPrompt.prompt();
+                const { outcome } = await window.deferredPrompt.userChoice;
+                console.log('[App] Choix de l\'utilisateur:', outcome);
+                window.deferredPrompt = null;
+                prompt.remove();
+            });
+        }
     }
 }
 
