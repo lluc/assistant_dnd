@@ -67,6 +67,7 @@ class EquipmentSearch extends HTMLElement {
                     color: #2c1810;
                     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
                     transition: all 0.3s ease;
+                    box-sizing: border-box;
                 }
 
                 .search-input:focus {
@@ -94,6 +95,7 @@ class EquipmentSearch extends HTMLElement {
                     color: #2c1810;
                     cursor: pointer;
                     min-width: 150px;
+                    box-sizing: border-box;
                 }
 
                 .category-filter:focus {
