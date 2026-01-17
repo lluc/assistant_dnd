@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dnd-assistant-v3';
+const CACHE_NAME = 'dnd-assistant-v4';
 const OFFLINE_URL = './';
 
 const ASSETS_TO_CACHE = [

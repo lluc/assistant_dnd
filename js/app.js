@@ -351,13 +351,16 @@ class DnDApp {
             navigator.serviceWorker.register('./sw.js')
                 .then((registration) => {
                     console.log('[App] Service Worker enregistré avec succès:', registration);
-                    
+
+                    // Vérifier les mises à jour toutes les 30 secondes
+                    setInterval(() => registration.update(), 30000);
+
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
-                        
+
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                this.showNotification('Une nouvelle version est disponible', 'info');
+                                this.showUpdatePrompt(newWorker);
                             }
                         });
                     });
@@ -365,7 +368,42 @@ class DnDApp {
                 .catch((error) => {
                     console.error('[App] Échec de l\'enregistrement du Service Worker:', error);
                 });
+
+            // Recharger la page quand le nouveau SW prend le contrôle
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
         }
+    }
+
+    showUpdatePrompt(newWorker) {
+        const existingPrompt = document.querySelector('.update-prompt');
+        if (existingPrompt) return;
+
+        const prompt = document.createElement('div');
+        prompt.className = 'update-prompt';
+        prompt.innerHTML = `
+            <div class="update-prompt-content">
+                <span>🔄 Nouvelle version disponible</span>
+                <button class="update-button">Mettre à jour</button>
+                <button class="update-close">✕</button>
+            </div>
+        `;
+
+        prompt.querySelector('.update-button').addEventListener('click', () => {
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
+            prompt.remove();
+        });
+
+        prompt.querySelector('.update-close').addEventListener('click', () => {
+            prompt.remove();
+        });
+
+        document.body.appendChild(prompt);
     }
 
     setupPWAInstall() {
