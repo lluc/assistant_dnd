@@ -407,18 +407,17 @@ class DnDApp {
     }
 
     setupPWAInstall() {
-        let deferredPrompt;
-
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
-            deferredPrompt = e;
-            
+            this.deferredPrompt = e;
             this.showInstallPrompt();
         });
 
         window.addEventListener('appinstalled', () => {
             console.log('[App] Application PWA installée avec succès');
-            deferredPrompt = null;
+            this.deferredPrompt = null;
+            const prompt = document.querySelector('.pwa-install-prompt');
+            if (prompt) prompt.remove();
         });
     }
 
@@ -552,12 +551,11 @@ class DnDApp {
         const closeBtn = prompt.querySelector('.pwa-install-close');
 
         installBtn.addEventListener('click', async () => {
-            const event = window.deferredPrompt;
-            if (event) {
-                event.prompt();
-                const { outcome } = await event.userChoice;
+            if (this.deferredPrompt) {
+                this.deferredPrompt.prompt();
+                const { outcome } = await this.deferredPrompt.userChoice;
                 console.log('[App] Choix de l\'utilisateur:', outcome);
-                window.deferredPrompt = null;
+                this.deferredPrompt = null;
             }
             prompt.remove();
         });
@@ -565,17 +563,6 @@ class DnDApp {
         closeBtn.addEventListener('click', () => {
             prompt.remove();
         });
-
-        window.deferredPrompt = window.deferredPrompt;
-        if (window.deferredPrompt) {
-            installBtn.addEventListener('click', async () => {
-                window.deferredPrompt.prompt();
-                const { outcome } = await window.deferredPrompt.userChoice;
-                console.log('[App] Choix de l\'utilisateur:', outcome);
-                window.deferredPrompt = null;
-                prompt.remove();
-            });
-        }
     }
 }
 
