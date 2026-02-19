@@ -1,0 +1,3 @@
+fix(ui): resolve login screen layout issue
+
+Fixes a layout misalignment in the login screen caused by incorrect CSS margin calculations. Adjusted margin properties to align elements properly across all screen sizes.
