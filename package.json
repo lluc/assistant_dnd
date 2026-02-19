@@ -10,7 +10,8 @@
     "build": "echo 'Build completed - static files ready'",
     "deploy": "echo 'Deploy to static hosting service'",
     "lint": "echo 'No linting configured for vanilla JS'",
-    "test": "echo 'No tests configured yet'"
+    "test": "echo 'No tests configured yet'",
+    "version": "node scripts/update-version.js && git add js/version.js"
   },
   "keywords": [
     "dnd",

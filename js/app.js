@@ -1,6 +1,7 @@
 import './components/header.js';
 import './components/equipment-search.js';
 import './components/equipment-card.js';
+import { APP_VERSION } from './version.js';
 
 class DnDApp {
     static CURRENCY_FR = {
@@ -23,6 +24,16 @@ class DnDApp {
         this.loadInitialPage();
         this.registerServiceWorker();
         this.setupPWAInstall();
+        this.displayVersion();
+    }
+
+    displayVersion() {
+        const footerP = document.querySelector('footer p');
+        if (footerP) {
+            footerP.innerHTML =
+                `&copy; ${new Date().getFullYear()} Assistant D&amp;D MJ - Créé avec les API D&amp;D5E ` +
+                `<span class="app-version">v${APP_VERSION}</span>`;
+        }
     }
 
     setupEventListeners() {

@@ -161,6 +161,15 @@ footer p {
     font-size: 0.9rem;
 }
 
+.app-version {
+    opacity: 0.65;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    margin-left: 0.5rem;
+    font-family: var(--font-monospace);
+    vertical-align: middle;
+}
+
 /* Loading Overlay */
 .loading-overlay {
     position: fixed;
