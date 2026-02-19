@@ -1,6 +1,7 @@
 class DnDAPI {
     constructor() {
         this.baseURL = 'https://www.dnd5eapi.co/api/2024';
+        this.spellsBaseURL = 'https://www.dnd5eapi.co/api/2014';
         this.cache = new Map();
         this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
     }
@@ -85,6 +86,38 @@ class DnDAPI {
         } catch (error) {
             console.error('Category fetch error:', error);
             return null;
+        }
+    }
+
+    async getSpellsList() {
+        return this.fetchWithCache(`${this.spellsBaseURL}/spells`);
+    }
+
+    async getSpellDetails(index) {
+        return this.fetchWithCache(`${this.spellsBaseURL}/spells/${index}`);
+    }
+
+    async getSpellsByLevel(level) {
+        try {
+            const list = await this.getSpellsList();
+            return list ? list.results.filter(s => s.level === parseInt(level)) : [];
+        } catch (error) {
+            console.error('Spells by level fetch error:', error);
+            return [];
+        }
+    }
+
+    async searchSpells(query) {
+        try {
+            const list = await this.getSpellsList();
+            if (!list) return [];
+            const filtered = list.results.filter(s =>
+                s.name.toLowerCase().includes(query.toLowerCase())
+            );
+            return Promise.all(filtered.slice(0, 20).map(s => this.getSpellDetails(s.index)));
+        } catch (error) {
+            console.error('Spell search error:', error);
+            return [];
         }
     }
 }

@@ -2,6 +2,7 @@ class StorageManager {
     constructor() {
         this.keys = {
             favorites: 'dnd-favorites',
+            spellFavorites: 'dnd-spell-favorites',
             searchHistory: 'dnd-search-history',
             userPreferences: 'dnd-user-preferences',
             diceHistory: 'dnd-dice-history'
@@ -46,6 +47,47 @@ class StorageManager {
 
     isFavorite(index) {
         const favorites = this.getFavorites();
+        return favorites.includes(index);
+    }
+
+    getSpellFavorites() {
+        try {
+            return JSON.parse(localStorage.getItem(this.keys.spellFavorites) || '[]');
+        } catch (error) {
+            console.error('Failed to get spell favorites:', error);
+            return [];
+        }
+    }
+
+    addSpellFavorite(index) {
+        try {
+            const favorites = this.getSpellFavorites();
+            if (!favorites.includes(index)) {
+                favorites.push(index);
+                localStorage.setItem(this.keys.spellFavorites, JSON.stringify(favorites));
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Failed to add spell favorite:', error);
+            return false;
+        }
+    }
+
+    removeSpellFavorite(index) {
+        try {
+            const favorites = this.getSpellFavorites();
+            const newFavorites = favorites.filter(fav => fav !== index);
+            localStorage.setItem(this.keys.spellFavorites, JSON.stringify(newFavorites));
+            return true;
+        } catch (error) {
+            console.error('Failed to remove spell favorite:', error);
+            return false;
+        }
+    }
+
+    isSpellFavorite(index) {
+        const favorites = this.getSpellFavorites();
         return favorites.includes(index);
     }
 

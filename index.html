@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="description" content="Assistant pour Maître de Jeu Donjons & Dragons - Recherche d'équipement et outils de jeu">
     <meta name="theme-color" content="#e63946">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="D&D Assistant">
@@ -32,6 +33,14 @@
                 </div>
             </section>
             
+            <section id="spells-section" class="page-section hidden">
+                <div class="container">
+                    <h1 class="page-title">Grimoire des Sorts</h1>
+                    <spells-search></spells-search>
+                    <div id="spells-results" class="results-grid"></div>
+                </div>
+            </section>
+
             <section id="favorites-section" class="page-section hidden">
                 <div class="container">
                     <h1 class="page-title">Équipement Favori</h1>

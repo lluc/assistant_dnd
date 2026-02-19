@@ -137,6 +137,7 @@ class DndHeader extends HTMLElement {
                 <nav>
                     <ul>
                         <li><button data-page="equipment" class="nav-btn active">Équipement</button></li>
+                        <li><button data-page="spells" class="nav-btn">Sorts</button></li>
                         <li><button data-page="favorites" class="nav-btn">Favoris</button></li>
                         <li><button data-page="dice" class="nav-btn">Dés</button></li>
                     </ul>

@@ -33,11 +33,12 @@ class EquipmentCard extends HTMLElement {
             if (data) {
                 this.equipment = JSON.parse(data);
                 this.render();
-                
-                const { storageManager } = await import('../utils/storage.js');
-                const isFavorited = storageManager.isFavorite(this.equipment.index);
-                this.updateFavoriteButton(isFavorited);
             }
+        }
+        if (this.equipment) {
+            const { storageManager } = await import('../utils/storage.js');
+            const isFavorited = storageManager.isFavorite(this.equipment.index);
+            this.updateFavoriteButton(isFavorited);
         }
     }
 

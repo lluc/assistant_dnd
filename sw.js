@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dnd-assistant-v6';
+const CACHE_NAME = 'dnd-assistant-v9';
 const OFFLINE_URL = './';
 
 const ASSETS_TO_CACHE = [
@@ -14,6 +14,8 @@ const ASSETS_TO_CACHE = [
   './js/components/equipment-search.js',
   './js/components/equipment-card.js',
   './js/components/dice-roller.js',
+  './js/components/spells-search.js',
+  './js/components/spell-card.js',
   './js/utils/storage.js',
   './js/utils/performance.js',
   './icons/icon-192x192.png',

@@ -1,6 +1,8 @@
 import './components/header.js';
 import './components/equipment-search.js';
 import './components/equipment-card.js';
+import './components/spells-search.js';
+import './components/spell-card.js';
 import { APP_VERSION } from './version.js';
 
 class DnDApp {
@@ -51,6 +53,14 @@ class DnDApp {
 
         document.addEventListener('show-details', (e) => {
             this.showEquipmentDetails(e.detail.index);
+        });
+
+        document.addEventListener('spells-search-results', (e) => {
+            this.displaySpellResults(e.detail.results);
+        });
+
+        document.addEventListener('spell-show-details', (e) => {
+            this.showSpellDetails(e.detail.index);
         });
     }
 
@@ -138,15 +148,16 @@ class DnDApp {
     async loadFavorites() {
         const favoritesContainer = document.getElementById('favorites-results');
         const { storageManager } = await import('./utils/storage.js');
-        const favorites = storageManager.getFavorites();
+        const equipmentFavorites = storageManager.getFavorites();
+        const spellFavorites = storageManager.getSpellFavorites();
 
-        if (favorites.length === 0) {
+        if (equipmentFavorites.length === 0 && spellFavorites.length === 0) {
             favoritesContainer.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">⭐</div>
                     <div class="empty-state-title">Aucun favori</div>
                     <div class="empty-state-text">
-                        Ajoutez des équipements à vos favoris pour les retrouver facilement ici.
+                        Ajoutez des équipements ou des sorts à vos favoris pour les retrouver facilement ici.
                     </div>
                 </div>
             `;
@@ -157,18 +168,42 @@ class DnDApp {
 
         try {
             const { dndAPI } = await import('./api.js');
-            const favoriteDetails = await Promise.all(
-                favorites.map(index => dndAPI.getEquipmentDetails(index))
-            );
-
             favoritesContainer.innerHTML = '';
             favoritesContainer.classList.add('fade-in');
 
-            favoriteDetails.forEach(equipment => {
-                const card = document.createElement('equipment-card');
-                card.setAttribute('equipment-data', JSON.stringify(equipment));
-                favoritesContainer.appendChild(card);
-            });
+            if (equipmentFavorites.length > 0) {
+                const heading = document.createElement('h2');
+                heading.className = 'page-title';
+                heading.style.cssText = 'font-size: 1.3rem; margin: 0 0 1rem 0; grid-column: 1/-1;';
+                heading.textContent = 'Équipement favori';
+                favoritesContainer.appendChild(heading);
+
+                const equipmentDetails = await Promise.all(
+                    equipmentFavorites.map(index => dndAPI.getEquipmentDetails(index))
+                );
+                equipmentDetails.forEach(equipment => {
+                    const card = document.createElement('equipment-card');
+                    card.setAttribute('equipment-data', JSON.stringify(equipment));
+                    favoritesContainer.appendChild(card);
+                });
+            }
+
+            if (spellFavorites.length > 0) {
+                const heading = document.createElement('h2');
+                heading.className = 'page-title';
+                heading.style.cssText = 'font-size: 1.3rem; margin: 2rem 0 1rem 0; grid-column: 1/-1;';
+                heading.textContent = 'Sorts favoris';
+                favoritesContainer.appendChild(heading);
+
+                const spellDetails = await Promise.all(
+                    spellFavorites.map(index => dndAPI.getSpellDetails(index))
+                );
+                spellDetails.forEach(spell => {
+                    const card = document.createElement('spell-card');
+                    card.setAttribute('spell-data', JSON.stringify(spell));
+                    favoritesContainer.appendChild(card);
+                });
+            }
         } catch (error) {
             console.error('Failed to load favorites:', error);
             favoritesContainer.innerHTML = `
@@ -191,6 +226,141 @@ class DnDApp {
             detail.isFavorited ? 'Ajouté aux favoris' : 'Retiré des favoris',
             'success'
         );
+    }
+
+    async displaySpellResults(results) {
+        const resultsContainer = document.getElementById('spells-results');
+
+        if (!results || results.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">✨</div>
+                    <div class="empty-state-title">Aucun sort trouvé</div>
+                    <div class="empty-state-text">
+                        Essayez de modifier votre recherche ou votre filtre de niveau.
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        resultsContainer.innerHTML = '';
+        resultsContainer.classList.add('fade-in');
+
+        results.forEach(spell => {
+            const card = document.createElement('spell-card');
+            card.setAttribute('spell-data', JSON.stringify(spell));
+            resultsContainer.appendChild(card);
+        });
+    }
+
+    async showSpellDetails(index) {
+        try {
+            const { dndAPI } = await import('./api.js');
+            const spell = await dndAPI.getSpellDetails(index);
+            this.showSpellModal(spell);
+        } catch (error) {
+            console.error('Failed to load spell details:', error);
+            this.showNotification('Erreur lors du chargement des détails', 'error');
+        }
+    }
+
+    showSpellModal(spell) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay fade-in';
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content scale-in';
+
+        const school = spell.school ? spell.school.name.toLowerCase() : '';
+        const imageIndex = spell.index.replace(/-/g, '_');
+        const imagePath = `./assets/images/spell/${school}/${imageIndex}.webp`;
+
+        modalContent.innerHTML = `
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+            <img
+                src="${imagePath}"
+                alt="${spell.name}"
+                class="spell-modal-image"
+                onerror="this.style.display='none'"
+            >
+            <h2>${spell.name}</h2>
+            <div class="equipment-details">
+                ${this.formatSpellDetails(spell)}
+            </div>
+        `;
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    formatSpellRange(range) {
+        if (!range) return 'N/A';
+        return range.replace(/(\d+)\s*-?\s*(?:foot|feet)/gi, (match, feet) => {
+            const m = (parseInt(feet) * 0.3048).toFixed(1);
+            return `${feet} ft (${m} m)`;
+        });
+    }
+
+    parseMarkdown(text) {
+        return text
+            .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            .replace(/_(.+?)_/g, '<em>$1</em>');
+    }
+
+    formatSpellDetails(spell) {
+        const COMPONENTS_FR = { V: 'Verbale', S: 'Somatique', M: 'Matérielle' };
+        let html = '<div class="details-grid">';
+
+        const levelLabel = spell.level === 0 ? 'Sort mineur' : `Niveau ${spell.level}`;
+        html += `<div class="detail-section"><h3>École & Niveau</h3><p>${levelLabel} — ${spell.school ? spell.school.name : 'N/A'}</p></div>`;
+
+        if (spell.desc && spell.desc.length > 0) {
+            html += '<div class="detail-section"><h3>Description</h3>';
+            spell.desc.forEach(paragraph => { html += `<p>${this.parseMarkdown(paragraph)}</p>`; });
+            html += '</div>';
+        }
+
+        html += `
+            <div class="detail-section"><h3>Temps d'incantation</h3><p>${spell.casting_time || 'N/A'}</p></div>
+            <div class="detail-section"><h3>Portée</h3><p>${this.formatSpellRange(spell.range)}</p></div>
+            <div class="detail-section"><h3>Durée</h3><p>${spell.duration || 'N/A'}</p></div>
+        `;
+
+        const components = (spell.components || []).map(c => COMPONENTS_FR[c] || c).join(', ');
+        const material = spell.material ? ` (${spell.material})` : '';
+        html += `<div class="detail-section"><h3>Composantes</h3><p>${components}${material}</p></div>`;
+
+        html += `
+            <div class="detail-section"><h3>Concentration</h3><p>${spell.concentration ? 'Oui' : 'Non'}</p></div>
+            <div class="detail-section"><h3>Rituel</h3><p>${spell.ritual ? 'Oui' : 'Non'}</p></div>
+        `;
+
+        if (spell.classes && spell.classes.length > 0) {
+            html += `
+                <div class="detail-section"><h3>Classes</h3>
+                <div class="properties-list">
+                    ${spell.classes.map(c => `<span class="property-tag">${c.name}</span>`).join('')}
+                </div></div>
+            `;
+        }
+
+        if (spell.higher_level && spell.higher_level.length > 0) {
+            html += '<div class="detail-section"><h3>Niveaux supérieurs</h3>';
+            spell.higher_level.forEach(paragraph => { html += `<p>${this.parseMarkdown(paragraph)}</p>`; });
+            html += '</div>';
+        }
+
+        html += '</div>';
+        return html;
     }
 
     async showEquipmentDetails(index) {
