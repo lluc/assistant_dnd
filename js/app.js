@@ -374,15 +374,108 @@ class DnDApp {
         }
     }
 
+    getEquipmentImagePath(equipment) {
+        // Priorité : catégories spécifiques avant les génériques
+        const CATEGORY_FOLDER = [
+            ['equipment-packs',     'kits'],
+            ['other-tools',         'kits'],
+            ['gaming-sets',         'sets_jeux'],
+            ['artisans-tools',      'outils_artisan'],
+            ['musical-instruments', 'instruments_musique'],
+            ['ammunition',          'munitions'],
+            ['arcane-foci',         'focaliseurs'],
+            ['holy-symbols',        'focaliseurs'],
+            ['druidic-foci',        'focaliseurs'],
+            ['barding',             'barding'],
+            ['weapons',             'armes'],
+            ['armor',               'armures'],
+            ['mounts',              'montures'],
+            ['vehicles',            'vehicules'],
+            ['adventuring-gear',    'equipement_aventurier'],
+            ['tools',               'outils_artisan'],
+        ];
+
+        // Chemin complet quand le dossier diffère de ce que la catégorie donnerait
+        const PATH_OVERRIDE = {
+            'climbers-kit':     "kits/climber's_kit",
+            'healers-kit':      "kits/healer's_kit",
+            'navigators-tools': "outils_artisan/navigator's_tools",
+            'net':              'armes/net',
+            'quarterstaff':     'armes/quarterstaff',
+            'thieves-tools':    "equipement_aventurier/thieves'_tools",
+        };
+
+        // Nom de fichier quand l'API 2024 a simplifié/renommé l'item
+        const FILE_OVERRIDE = {
+            // Armes — crossbows renommés (sans virgule)
+            'hand-crossbow':    'crossbow,_hand',
+            'heavy-crossbow':   'crossbow,_heavy',
+            'light-crossbow':   'crossbow,_light',
+            // Armures — tiret vs underscore
+            'half-plate-armor': 'half_plate_armor',
+            // Équipement aventurier — noms simplifiés dans l'API 2024
+            'acid':             'acid_(vial)',
+            'alchemists-fire':  "alchemist's_fire_(flask)",
+            'antitoxin':        'antitoxin_(vial)',
+            'ball-bearings':    'ball_bearings_(bag_of_1,000)',
+            'chain':            'chain_(10_feet)',
+            'costume':          'clothes,_costume',
+            'flask':            'flask_or_tankard',
+            'holy-water':       'holy_water_(flask)',
+            'ink':              'ink_(1_ounce_bottle)',
+            'jug':              'jug_or_pitcher',
+            'ladder':           'ladder_(10-foot)',
+            'map':              'case,_map_or_scroll',
+            'mirror':           'mirror,_steel',
+            'oil':              'oil_(flask)',
+            'paper':            'paper_(one_sheet)',
+            'parchment':        'parchment_(one_sheet)',
+            'perfume':          'perfume_(vial)',
+            'poison-basic':     'poison,_basic_(vial)',
+            'pole':             'pole_(10-foot)',
+            'rations':          'rations_(1_day)',
+            'robe':             'robes',
+            'rope':             'rope,_hempen_(50_feet)',
+            'spikes-iron':      'spike,_iron',
+            'string':           'string_(10_feet)',
+            'tent':             'tent,_two-person',
+            // Munitions — pluralisés/renommés dans l'API 2024
+            'arrows':           'arrow',
+            'bolts':            'crossbow_bolt',
+            'bullets-sling':    'sling_bullet',
+            'needles':          'blowgun_needle',
+            // Sets de jeux
+            'dice':             'dice_set',
+            'playing-cards':    'playing_card_set',
+        };
+
+        if (PATH_OVERRIDE[equipment.index]) {
+            return `./assets/images/equipment/${PATH_OVERRIDE[equipment.index]}.webp`;
+        }
+
+        // L'API 2024 renvoie equipment_categories (tableau)
+        const cats = (equipment.equipment_categories || []).map(c => c.index);
+        const match = CATEGORY_FOLDER.find(([key]) => cats.includes(key));
+        if (!match) return null;
+        const file = FILE_OVERRIDE[equipment.index] || equipment.name.toLowerCase().replace(/ /g, '_');
+        return `./assets/images/equipment/${match[1]}/${file}.webp`;
+    }
+
     showModal(equipment) {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay fade-in';
-        
+
         const modalContent = document.createElement('div');
         modalContent.className = 'modal-content scale-in';
-        
+
+        const imagePath = this.getEquipmentImagePath(equipment);
+        const imageHTML = imagePath
+            ? `<img src="${imagePath}" alt="${equipment.name}" class="spell-modal-image" onerror="this.style.display='none'">`
+            : '';
+
         modalContent.innerHTML = `
             <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+            ${imageHTML}
             <h2>${equipment.name}</h2>
             <div class="equipment-details">
                 ${this.formatEquipmentDetails(equipment)}
