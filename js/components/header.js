@@ -2,6 +2,7 @@ class DndHeader extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+        this._menuOpen = false;
     }
 
     connectedCallback() {
@@ -31,6 +32,7 @@ class DndHeader extends HTMLElement {
                     align-items: center;
                 }
 
+                /* ─── Logo ─── */
                 .logo {
                     display: flex;
                     align-items: center;
@@ -49,6 +51,7 @@ class DndHeader extends HTMLElement {
                     font-weight: bold;
                     color: #2c1810;
                     box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+                    flex-shrink: 0;
                 }
 
                 .logo h1 {
@@ -58,14 +61,17 @@ class DndHeader extends HTMLElement {
                     color: #ffd700;
                     margin: 0;
                     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+                    white-space: nowrap;
                 }
 
+                /* ─── Nav desktop ─── */
                 nav ul {
                     list-style: none;
                     margin: 0;
                     padding: 0;
                     display: flex;
-                    gap: 2rem;
+                    gap: 0.5rem;
+                    flex-wrap: nowrap;
                 }
 
                 nav button {
@@ -75,10 +81,11 @@ class DndHeader extends HTMLElement {
                     font-family: 'Crimson Text', serif;
                     font-size: 1.1rem;
                     cursor: pointer;
-                    padding: 0.5rem 1rem;
+                    padding: 0.5rem 0.9rem;
                     border-radius: 4px;
                     transition: all 0.3s ease;
                     position: relative;
+                    white-space: nowrap;
                 }
 
                 nav button:hover {
@@ -107,24 +114,107 @@ class DndHeader extends HTMLElement {
                     width: 80%;
                 }
 
-                @media (max-width: 768px) {
+                /* ─── Hamburger ─── */
+                .burger {
+                    display: none;
+                    flex-direction: column;
+                    justify-content: center;
+                    gap: 5px;
+                    width: 40px;
+                    height: 40px;
+                    background: none;
+                    border: 1px solid rgba(244, 228, 193, 0.3);
+                    border-radius: 6px;
+                    cursor: pointer;
+                    padding: 8px;
+                    flex-shrink: 0;
+                    transition: border-color 0.2s;
+                }
+
+                .burger:hover {
+                    border-color: #ffd700;
+                }
+
+                .burger span {
+                    display: block;
+                    height: 2px;
+                    background: #f4e4c1;
+                    border-radius: 2px;
+                    transition: all 0.3s ease;
+                    transform-origin: center;
+                }
+
+                /* Burger → croix quand ouvert */
+                .burger.open span:nth-child(1) {
+                    transform: translateY(7px) rotate(45deg);
+                }
+                .burger.open span:nth-child(2) {
+                    opacity: 0;
+                    transform: scaleX(0);
+                }
+                .burger.open span:nth-child(3) {
+                    transform: translateY(-7px) rotate(-45deg);
+                }
+
+                /* ─── Mobile ─── */
+                @media (max-width: 700px) {
                     header {
-                        flex-direction: column;
-                        gap: 1rem;
-                        padding: 1rem;
+                        padding: 0.75rem 1rem;
+                        flex-wrap: wrap;
+                        gap: 0;
                     }
 
                     .logo h1 {
-                        font-size: 1.5rem;
+                        font-size: 1.3rem;
+                    }
+
+                    .logo-icon {
+                        width: 40px;
+                        height: 40px;
+                        font-size: 1.2rem;
+                    }
+
+                    .burger {
+                        display: flex;
+                    }
+
+                    nav {
+                        width: 100%;
+                        overflow: hidden;
+                        max-height: 0;
+                        transition: max-height 0.35s ease, padding 0.35s ease;
+                    }
+
+                    nav.open {
+                        max-height: 400px;
+                        padding-bottom: 0.75rem;
                     }
 
                     nav ul {
-                        gap: 1rem;
+                        flex-direction: column;
+                        gap: 0;
+                        padding-top: 0.5rem;
+                    }
+
+                    nav li {
+                        width: 100%;
                     }
 
                     nav button {
-                        font-size: 1rem;
-                        padding: 0.4rem 0.8rem;
+                        width: 100%;
+                        text-align: left;
+                        font-size: 1.05rem;
+                        padding: 0.65rem 0.75rem;
+                        border-radius: 4px;
+                    }
+
+                    nav button::after {
+                        display: none;
+                    }
+
+                    nav button.active {
+                        border-left: 3px solid #ffd700;
+                        padding-left: 0.6rem;
                     }
                 }
             </style>
@@ -134,10 +224,18 @@ class DndHeader extends HTMLElement {
                     <div class="logo-icon">🎲</div>
                     <h1>Assistant D&D MJ</h1>
                 </div>
-                <nav>
+
+                <button class="burger" aria-label="Menu" aria-expanded="false" aria-controls="main-nav">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <nav id="main-nav" role="navigation" aria-label="Navigation principale">
                     <ul>
                         <li><button data-page="equipment" class="nav-btn active">Équipement</button></li>
                         <li><button data-page="spells" class="nav-btn">Sorts</button></li>
+                        <li><button data-page="classes" class="nav-btn">Classes</button></li>
                         <li><button data-page="favorites" class="nav-btn">Favoris</button></li>
                         <li><button data-page="dice" class="nav-btn">Dés</button></li>
                     </ul>
@@ -147,11 +245,26 @@ class DndHeader extends HTMLElement {
     }
 
     setupEventListeners() {
+        const burger = this.shadowRoot.querySelector('.burger');
+        const nav = this.shadowRoot.querySelector('nav');
+
+        burger.addEventListener('click', () => {
+            this._menuOpen = !this._menuOpen;
+            burger.classList.toggle('open', this._menuOpen);
+            nav.classList.toggle('open', this._menuOpen);
+            burger.setAttribute('aria-expanded', this._menuOpen);
+        });
+
         const navButtons = this.shadowRoot.querySelectorAll('.nav-btn');
         navButtons.forEach(button => {
             button.addEventListener('click', (e) => {
                 const page = e.target.dataset.page;
                 this.navigate(page);
+                // Fermer le menu après navigation sur mobile
+                this._menuOpen = false;
+                burger.classList.remove('open');
+                nav.classList.remove('open');
+                burger.setAttribute('aria-expanded', false);
             });
         });
     }

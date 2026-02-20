@@ -2,6 +2,7 @@ class DnDAPI {
     constructor() {
         this.baseURL = 'https://www.dnd5eapi.co/api/2024';
         this.spellsBaseURL = 'https://www.dnd5eapi.co/api/2014';
+        this.open5eBaseURL = 'https://api.open5e.com/v1';
         this.cache = new Map();
         this.cacheTimeout = 5 * 60 * 1000; // 5 minutes
     }
@@ -25,7 +26,7 @@ class DnDAPI {
         });
     }
 
-    async fetchWithCache(url) {
+    async fetchWithCache(url, retries = 3, retryDelay = 800) {
         const cached = this.getFromCache(url);
         if (cached) {
             return cached;
@@ -33,6 +34,15 @@ class DnDAPI {
 
         try {
             const response = await fetch(url);
+
+            // Rate-limit : attendre et réessayer avec backoff exponentiel
+            if (response.status === 429 && retries > 0) {
+                const retry = retries - 1;
+                console.warn(`[API] 429 sur ${url} — nouvel essai dans ${retryDelay}ms (${retry} restant(s))`);
+                await new Promise(resolve => setTimeout(resolve, retryDelay));
+                return this.fetchWithCache(url, retry, retryDelay * 2);
+            }
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -119,6 +129,34 @@ class DnDAPI {
             console.error('Spell search error:', error);
             return [];
         }
+    }
+
+    async getClassesList() {
+        return this.fetchWithCache(`${this.spellsBaseURL}/classes`);
+    }
+
+    async getClassDetails(index) {
+        return this.fetchWithCache(`${this.spellsBaseURL}/classes/${index}`);
+    }
+
+    async getClassLevels(index) {
+        return this.fetchWithCache(`${this.spellsBaseURL}/classes/${index}/levels`);
+    }
+
+    async getSubclassDetails(index) {
+        return this.fetchWithCache(`${this.spellsBaseURL}/subclasses/${index}`);
+    }
+
+    async getFeatureDetails(index) {
+        return this.fetchWithCache(`${this.spellsBaseURL}/features/${index}`);
+    }
+
+    async getProficiencyDetails(index) {
+        return this.fetchWithCache(`${this.spellsBaseURL}/proficiencies/${index}`);
+    }
+
+    async getOpen5eClass(slug) {
+        return this.fetchWithCache(`${this.open5eBaseURL}/classes/${slug}/`);
     }
 }
 

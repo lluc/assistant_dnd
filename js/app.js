@@ -3,6 +3,7 @@ import './components/equipment-search.js';
 import './components/equipment-card.js';
 import './components/spells-search.js';
 import './components/spell-card.js';
+import './components/class-browser.js';
 import { APP_VERSION } from './version.js';
 
 class DnDApp {
@@ -27,6 +28,20 @@ class DnDApp {
         this.registerServiceWorker();
         this.setupPWAInstall();
         this.displayVersion();
+        this.setupScrollToTop();
+    }
+
+    setupScrollToTop() {
+        const btn = document.getElementById('scroll-top-btn');
+        if (!btn) return;
+
+        window.addEventListener('scroll', () => {
+            btn.classList.toggle('visible', window.scrollY > 300);
+        }, { passive: true });
+
+        btn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
     }
 
     displayVersion() {
@@ -61,6 +76,24 @@ class DnDApp {
 
         document.addEventListener('spell-show-details', (e) => {
             this.showSpellDetails(e.detail.index);
+        });
+
+        document.addEventListener('class-feature-details', (e) => {
+            this.showClassFeature(e.detail.index);
+        });
+
+        document.addEventListener('class-proficiency-details', (e) => {
+            this.showClassProficiency(e.detail.index);
+        });
+
+        document.addEventListener('class-subclass-details', (e) => {
+            if (e.detail.data) {
+                // Open5e : toutes les données déjà embarquées dans l'événement
+                this.showClassSubclassModal(e.detail.data);
+            } else {
+                // Fallback dnd5eapi : fetch par index
+                this.showClassSubclass(e.detail.index);
+            }
         });
     }
 
@@ -302,7 +335,7 @@ class DnDApp {
 
     formatSpellRange(range) {
         if (!range) return 'N/A';
-        return range.replace(/(\d+)\s*-?\s*(?:foot|feet)/gi, (match, feet) => {
+        return range.replace(/(\d+)\s*-?\s*(?:foot|feet)/gi, (_match, feet) => {
             const m = (parseInt(feet) * 0.3048).toFixed(1);
             return `${feet} ft (${m} m)`;
         });
@@ -361,6 +394,232 @@ class DnDApp {
 
         html += '</div>';
         return html;
+    }
+
+    async showClassProficiency(index) {
+        try {
+            const { dndAPI } = await import('./api.js');
+            const prof = await dndAPI.getProficiencyDetails(index);
+            this.showClassProficiencyModal(prof);
+        } catch (error) {
+            console.error('Failed to load proficiency details:', error);
+            this.showNotification('Erreur lors du chargement de la maîtrise', 'error');
+        }
+    }
+
+    showClassProficiencyModal(prof) {
+        const TYPE_FR = {
+            'Armor':          'Armures',
+            'Weapons':        'Armes',
+            'Artisan\'s Tools': 'Outils d\'artisan',
+            'Tools':          'Outils',
+            'Saving Throws':  'Jets de sauvegarde',
+            'Skills':         'Compétences',
+            'Gaming Sets':    'Jeux',
+            'Musical Instruments': 'Instruments de musique',
+            'Other':          'Autre',
+        };
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay fade-in';
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content scale-in';
+
+        const typeFR = TYPE_FR[prof.type] || prof.type || '—';
+        const classes = (prof.classes || []).map(c => `<span class="property-tag">${c.name}</span>`).join('');
+        const reference = prof.reference
+            ? `<div class="detail-section"><h3>Référence</h3><p>${prof.reference.name}</p></div>`
+            : '';
+
+        const TYPES_WITH_IMAGE = new Set(['Armor', 'Weapons', 'Tools', "Artisan's Tools", 'Gaming Sets', 'Musical Instruments']);
+        const imgSlug = TYPES_WITH_IMAGE.has(prof.type)
+            ? prof.name.toLowerCase().replace(/ /g, '_')
+            : null;
+        const imgPath = imgSlug ? `./assets/images/proficiencies/${imgSlug}.webp` : null;
+
+        modalContent.innerHTML = `
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+            ${imgPath ? `<img src="${imgPath}" alt="${prof.name}" class="spell-modal-image" onerror="this.style.display='none'">` : ''}
+            <h2>${prof.name}</h2>
+            <div class="equipment-details">
+                <div class="details-grid">
+                    <div class="detail-section"><h3>Type</h3><p>${typeFR}</p></div>
+                    ${reference}
+                    ${classes ? `<div class="detail-section"><h3>Classes</h3><div class="properties-list">${classes}</div></div>` : ''}
+                </div>
+            </div>
+        `;
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    }
+
+    async showClassFeature(index) {
+        try {
+            const { dndAPI } = await import('./api.js');
+            const feature = await dndAPI.getFeatureDetails(index);
+            this.showClassFeatureModal(feature);
+        } catch (error) {
+            console.error('Failed to load feature details:', error);
+            this.showNotification('Erreur lors du chargement de la capacité', 'error');
+        }
+    }
+
+    getFeatureImagePath(featureName, classIndex) {
+        const slug = featureName.toLowerCase().replace(/:/g, '_').replace(/\//g, '_').replace(/ /g, '_');
+        return `./assets/images/feature/${classIndex}/${slug}_(${classIndex}).webp`;
+    }
+
+    showClassFeatureModal(feature) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay fade-in';
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content scale-in';
+
+        const levelLabel = feature.level ? `Niveau ${feature.level}` : '';
+        const classIndex = feature.class ? feature.class.index : '';
+        const className = feature.class ? feature.class.name : '';
+        const subtitle = [className, levelLabel].filter(Boolean).join(' — ');
+
+        const descHtml = (feature.desc || [])
+            .map(p => `<p>${this.parseMarkdown(p)}</p>`)
+            .join('');
+
+        const imagePath = classIndex ? this.getFeatureImagePath(feature.name, classIndex) : null;
+        const imageHTML = imagePath
+            ? `<img src="${imagePath}" alt="${feature.name}" class="spell-modal-image" onerror="this.style.display='none'">`
+            : '';
+
+        modalContent.innerHTML = `
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+            ${imageHTML}
+            <h2>${feature.name}</h2>
+            ${subtitle ? `<p style="font-family:'Crimson Text',serif;color:#654321;margin:0 0 1rem 0;font-style:italic;">${subtitle}</p>` : ''}
+            <div class="equipment-details">
+                <div class="details-grid">
+                    <div class="detail-section">${descHtml || '<p>Aucune description disponible.</p>'}</div>
+                </div>
+            </div>
+        `;
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    }
+
+    async showClassSubclass(index) {
+        try {
+            const { dndAPI } = await import('./api.js');
+            const subclass = await dndAPI.getSubclassDetails(index);
+            this.showClassSubclassModal(subclass);
+        } catch (error) {
+            console.error('Failed to load subclass details:', error);
+            this.showNotification('Erreur lors du chargement de la sous-classe', 'error');
+        }
+    }
+
+    showClassSubclassModal(subclass) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay fade-in';
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content scale-in';
+
+        // Données Open5e : {name, desc (string), source, subtypeName}
+        // Données dnd5eapi : {name, desc (array), class, subclass_flavor}
+        let subtitle = '';
+        let descHtml = '';
+
+        if (typeof subclass.desc === 'string') {
+            // Open5e : desc est une longue chaîne markdown
+            subtitle = [subclass.subtypeName, subclass.source].filter(Boolean).join(' — ');
+            descHtml = this.renderOpen5eMarkdown(subclass.desc);
+        } else {
+            // dnd5eapi : desc est un tableau de paragraphes
+            const className = subclass.class ? subclass.class.name : '';
+            const flavor = subclass.subclass_flavor || '';
+            subtitle = [className, flavor].filter(Boolean).join(' — ');
+            descHtml = (subclass.desc || [])
+                .map(p => `<p>${this.parseMarkdown(p)}</p>`)
+                .join('');
+        }
+
+        modalContent.innerHTML = `
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+            <h2>${subclass.name}</h2>
+            ${subtitle ? `<p style="font-family:'Crimson Text',serif;color:#654321;margin:0 0 1rem 0;font-style:italic;">${subtitle}</p>` : ''}
+            <div class="equipment-details">
+                <div class="details-grid">
+                    <div class="detail-section">${descHtml || '<p>Aucune description disponible.</p>'}</div>
+                </div>
+            </div>
+        `;
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    }
+
+    renderOpen5eMarkdown(text) {
+        if (!text) return '';
+
+        // Traitement ligne par ligne pour gérer tous les niveaux de titres (#, ##, …, #####)
+        // et les listes sans dépendre de doubles sauts de ligne.
+        const HEADING_STYLE = {
+            major: "font-family:'Cinzel',serif;font-size:1.05rem;font-weight:600;color:#5c2a00;" +
+                   "border-bottom:2px solid rgba(139,69,19,0.35);padding-bottom:0.2rem;" +
+                   "margin:1.5rem 0 0.5rem 0;",
+            minor: "font-family:'Cinzel',serif;font-size:0.95rem;font-weight:600;color:#2c1810;" +
+                   "border-bottom:1px solid rgba(139,69,19,0.2);padding-bottom:0.1rem;" +
+                   "margin:1.1rem 0 0.3rem 0;",
+        };
+
+        const lines = text.split('\n');
+        const parts = [];
+        let paraLines = [];
+
+        const flushPara = () => {
+            const content = paraLines.join(' ').trim();
+            if (content) parts.push(`<p style="margin:0.4rem 0;">${this.parseMarkdown(content)}</p>`);
+            paraLines = [];
+        };
+
+        for (const raw of lines) {
+            const line = raw.trim();
+
+            // Titres : # à ######
+            const hMatch = line.match(/^(#{1,6})\s+(.+)$/);
+            if (hMatch) {
+                flushPara();
+                const depth = hMatch[1].length;
+                const title = this.parseMarkdown(hMatch[2]);
+                // ##### (capacité) = minor, tout le reste = major
+                const style = depth >= 4 ? HEADING_STYLE.minor : HEADING_STYLE.major;
+                const tag = depth >= 4 ? 'h4' : 'h3';
+                parts.push(`<${tag} style="${style}">${title}</${tag}>`);
+                continue;
+            }
+
+            // Éléments de liste (- ou *)
+            if (/^[-*]\s/.test(line)) {
+                flushPara();
+                parts.push(`<li style="margin:0.2rem 0 0.2rem 1.4rem;">${this.parseMarkdown(line.slice(2))}</li>`);
+                continue;
+            }
+
+            // Ligne vide → fin de paragraphe
+            if (!line) {
+                flushPara();
+                continue;
+            }
+
+            paraLines.push(line);
+        }
+
+        flushPara();
+        return parts.join('');
     }
 
     async showEquipmentDetails(index) {
