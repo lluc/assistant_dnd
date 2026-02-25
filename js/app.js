@@ -4,6 +4,7 @@ import './components/equipment-card.js';
 import './components/spells-search.js';
 import './components/spell-card.js';
 import './components/class-browser.js';
+import './components/species-browser.js';
 import { APP_VERSION } from './version.js';
 
 class DnDApp {
@@ -84,6 +85,10 @@ class DnDApp {
 
         document.addEventListener('class-proficiency-details', (e) => {
             this.showClassProficiency(e.detail.index);
+        });
+
+        document.addEventListener('species-subspecies-details', (e) => {
+            this.showSubspeciesModal(e.detail.data);
         });
 
         document.addEventListener('class-subclass-details', (e) => {
@@ -518,6 +523,53 @@ class DnDApp {
             console.error('Failed to load subclass details:', error);
             this.showNotification('Erreur lors du chargement de la sous-classe', 'error');
         }
+    }
+
+    showSubspeciesModal(subspecies) {
+        const ABILITY_FR = {
+            str: 'Force', dex: 'Dextérité', con: 'Constitution',
+            int: 'Intelligence', wis: 'Sagesse', cha: 'Charisme',
+        };
+
+        const bonusesHtml = (subspecies.ability_bonuses || [])
+            .map(ab => {
+                const abbr = ab.ability_score?.index || '';
+                const name = ABILITY_FR[abbr] || ab.ability_score?.name || abbr;
+                return `<span style="display:inline-flex;align-items:center;gap:0.3rem;padding:0.3rem 0.7rem;background:rgba(76,153,0,0.1);border:1px solid #4c9900;border-radius:20px;font-size:0.9rem;color:#2a5500;margin:0.2rem;">+${ab.bonus} ${name}</span>`;
+            }).join('');
+
+        const traitsHtml = (subspecies.racial_traits || [])
+            .map(t => `<span style="padding:0.2rem 0.6rem;background:rgba(139,69,19,0.08);border:1px solid rgba(139,69,19,0.35);border-radius:4px;font-size:0.9rem;color:#4a2800;display:inline-block;margin:0.2rem;">${t.name}</span>`)
+            .join('');
+
+        const descHtml = subspecies.desc
+            ? `<p style="font-family:'Crimson Text',serif;font-size:1rem;color:#3d1c00;line-height:1.6;margin-bottom:1rem;">${subspecies.desc}</p>`
+            : '';
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay fade-in';
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content scale-in';
+
+        modalContent.innerHTML = `
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+            <h2>${subspecies.name}</h2>
+            ${subspecies.race ? `<p style="font-family:'Crimson Text',serif;color:#654321;margin:0 0 1rem 0;font-style:italic;">Sous-espèce — ${subspecies.race.name}</p>` : ''}
+            <div class="equipment-details">
+                <div class="details-grid">
+                    <div class="detail-section">
+                        ${descHtml}
+                        ${bonusesHtml ? `<div style="margin-bottom:0.75rem;"><strong style="font-family:'Cinzel',serif;font-size:0.9rem;color:#2c1810;">Bonus de caractéristiques</strong><br><div style="margin-top:0.4rem;">${bonusesHtml}</div></div>` : ''}
+                        ${traitsHtml ? `<div><strong style="font-family:'Cinzel',serif;font-size:0.9rem;color:#2c1810;">Traits supplémentaires</strong><br><div style="margin-top:0.4rem;">${traitsHtml}</div></div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
     }
 
     showClassSubclassModal(subclass) {

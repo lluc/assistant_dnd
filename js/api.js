@@ -158,6 +158,22 @@ class DnDAPI {
     async getOpen5eClass(slug) {
         return this.fetchWithCache(`${this.open5eBaseURL}/classes/${slug}/`);
     }
+
+    async getSpeciesList() {
+        return this.fetchWithCache(`${this.spellsBaseURL}/races`);
+    }
+
+    async getSpeciesDetails(index) {
+        return this.fetchWithCache(`${this.spellsBaseURL}/races/${index}`);
+    }
+
+    async getSubspeciesDetails(index) {
+        return this.fetchWithCache(`${this.spellsBaseURL}/subraces/${index}`);
+    }
+
+    async getTraitDetails(index) {
+        return this.fetchWithCache(`${this.spellsBaseURL}/traits/${index}`);
+    }
 }
 
 export const dndAPI = new DnDAPI();
