@@ -236,6 +236,25 @@ class ClassBrowser extends HTMLElement {
                     font-weight: 600;
                 }
 
+                .badge-roll {
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+
+                .badge-roll:hover {
+                    background: rgba(139,69,19,0.25);
+                    border-color: #ffd700;
+                    color: #2c1810;
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                }
+
+                .badge-roll .roll-hint {
+                    font-size: 0.8rem;
+                    opacity: 0.6;
+                    margin-left: 0.1rem;
+                }
+
                 /* ─── Section maîtrises ─── */
                 .section-title {
                     font-family: 'Cinzel', serif;
@@ -556,7 +575,12 @@ class ClassBrowser extends HTMLElement {
             </div>
 
             <div class="info-badges">
-                <span class="badge">🎲 <strong>Dé de vie :</strong>&nbsp;d${cls.hit_die}</span>
+                <button class="badge badge-roll" type="button"
+                        data-notation="1d${cls.hit_die}"
+                        data-label="Dé de vie — ${nameFR}">
+                    🎲 <strong>Dé de vie :</strong>&nbsp;d${cls.hit_die}
+                    <span class="roll-hint">↩</span>
+                </button>
                 <span class="badge">🛡️ <strong>JS :</strong>&nbsp;${savingThrowsFR || '—'}</span>
             </div>
 
@@ -574,6 +598,18 @@ class ClassBrowser extends HTMLElement {
                     }));
                 });
             });
+
+            const hitDieBtn = this.shadowRoot.querySelector('.badge-roll');
+            if (hitDieBtn) {
+                hitDieBtn.addEventListener('click', () => {
+                    document.dispatchEvent(new CustomEvent('roll-dice', {
+                        detail: {
+                            notation: hitDieBtn.dataset.notation,
+                            label:    hitDieBtn.dataset.label,
+                        },
+                    }));
+                });
+            }
         }, 0);
 
         return detail;

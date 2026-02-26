@@ -1,10 +1,12 @@
 import './components/header.js';
 import './components/equipment-search.js';
 import './components/equipment-card.js';
+import './components/dice-roller.js';
 import './components/spells-search.js';
 import './components/spell-card.js';
 import './components/class-browser.js';
 import './components/species-browser.js';
+import './components/dice-modal.js';
 import { APP_VERSION } from './version.js';
 
 class DnDApp {

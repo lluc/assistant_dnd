@@ -31,18 +31,36 @@ All UI is built with native Web Components in [js/components/](js/components/):
 - **[equipment-search.js](js/components/equipment-search.js)** — Search input, category filters, results list
 - **[equipment-card.js](js/components/equipment-card.js)** — Equipment detail cards, modal, favorite toggle, unit conversions (ft→m, lbs→kg), French currency translation
 - **[dice-roller.js](js/components/dice-roller.js)** — Quick dice buttons (d4–d20, d100), custom rolls, history (50 entries), modifier support
+- **[spells-search.js](js/components/spells-search.js)** — Spell search with level filter, dispatches `spells-search-results`
+- **[spell-card.js](js/components/spell-card.js)** — Spell detail display, French component translation (V/S/M)
+- **[class-browser.js](js/components/class-browser.js)** — Class & subclass browser with proficiency details
+- **[species-browser.js](js/components/species-browser.js)** — Playable species browser
+- **[dice-modal.js](js/components/dice-modal.js)** — Global overlay modal for quick dice rolls triggered from any page (see below)
 
-Components communicate via custom DOM events (`navigation`, `search-results`, `favorite-toggled`, `show-details`) dispatched up to `app.js`.
+Components communicate via custom DOM events (`navigation`, `search-results`, `favorite-toggled`, `show-details`, `spells-search-results`) dispatched up to `app.js`.
+
+### Dice Modal — Cross-Page Dice Rolls
+
+Any component can open the dice modal without navigating away from the current page:
+
+```javascript
+document.dispatchEvent(new CustomEvent('roll-dice', {
+    detail: { notation: '1d8', label: 'Dé de vie — Guerrier' }
+}));
+```
+
+Supported notation: `[N]dX[+/-M]` (e.g. `"d20"`, `"2d6+3"`, `"1d8"`). The modal shows SVG die shapes, animates the roll, highlights crits/fumbles on d20, and saves to `storageManager.diceHistory`. Currently wired in `class-browser.js` (hit die badge).
 
 ### Services
 
-- **[js/api.js](js/api.js)** — Wraps the D&D5E API (`https://www.dnd5eapi.co/api/2024`) with a 5-minute in-memory cache. Methods: `getEquipmentList()`, `getEquipmentDetails(index)`, `getEquipmentCategories()`, `searchEquipment(query)`.
+- **[js/api.js](js/api.js)** — Wraps the D&D5E API (`https://www.dnd5eapi.co/api/2024`) with a 5-minute in-memory cache. Covers equipment, spells (list/details/by-level/search), classes (with subclasses), and species.
+- **[js/version.js](js/version.js)** — Auto-generated version constant. Update via `npm version patch|minor|major` (triggers `scripts/update-version.js` + stages the file).
 - **[js/utils/storage.js](js/utils/storage.js)** — LocalStorage manager for favorites, search history, dice history, and user preferences.
 - **[js/utils/performance.js](js/utils/performance.js)** — Performance metrics and API request monitoring (dev utility).
 
 ### PWA / Service Worker
 
-[sw.js](sw.js) uses a **cache-first** strategy. Cache name is versioned (`dnd-assistant-v5`) — increment this when assets change to trigger the update prompt in `app.js`. The HTTPS server is required to test the install prompt locally.
+[sw.js](sw.js) uses a **cache-first** strategy. Cache name is versioned (`dnd-assistant-v14`) — increment this when assets change to trigger the update prompt in `app.js`. The HTTPS server is required to test the install prompt locally.
 
 ### Styling
 
