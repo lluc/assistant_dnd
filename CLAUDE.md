@@ -36,6 +36,7 @@ All UI is built with native Web Components in [js/components/](js/components/):
 - **[class-browser.js](js/components/class-browser.js)** — Class & subclass browser with proficiency details
 - **[species-browser.js](js/components/species-browser.js)** — Playable species browser
 - **[dice-modal.js](js/components/dice-modal.js)** — Global overlay modal for quick dice rolls triggered from any page (see below)
+- **[about-modal.js](js/components/about-modal.js)** — Global overlay modal showing app version and credits, triggered by the "À propos" nav item
 
 Components communicate via custom DOM events (`navigation`, `search-results`, `favorite-toggled`, `show-details`, `spells-search-results`) dispatched up to `app.js`.
 
@@ -55,12 +56,13 @@ Supported notation: `[N]dX[+/-M]` (e.g. `"d20"`, `"2d6+3"`, `"1d8"`). The modal 
 
 - **[js/api.js](js/api.js)** — Wraps the D&D5E API (`https://www.dnd5eapi.co/api/2024`) with a 5-minute in-memory cache. Covers equipment, spells (list/details/by-level/search), classes (with subclasses), and species.
 - **[js/version.js](js/version.js)** — Auto-generated version constant. Update via `npm version patch|minor|major` (triggers `scripts/update-version.js` + stages the file).
+- **[js/changelog.js](js/changelog.js)** — Manual changelog array. Add a new entry at the top on each `npm version` bump, alongside bumping the SW cache version in `sw.js`.
 - **[js/utils/storage.js](js/utils/storage.js)** — LocalStorage manager for favorites, search history, dice history, and user preferences.
 - **[js/utils/performance.js](js/utils/performance.js)** — Performance metrics and API request monitoring (dev utility).
 
 ### PWA / Service Worker
 
-[sw.js](sw.js) uses a **cache-first** strategy. Cache name is versioned (`dnd-assistant-v14`) — increment this when assets change to trigger the update prompt in `app.js`. The HTTPS server is required to test the install prompt locally.
+[sw.js](sw.js) uses a **cache-first** strategy. Cache name is versioned (`dnd-assistant-v15`) — increment this when assets change to trigger the update prompt in `app.js`. The HTTPS server is required to test the install prompt locally.
 
 ### Styling
 

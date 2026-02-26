@@ -7,6 +7,7 @@ import './components/spell-card.js';
 import './components/class-browser.js';
 import './components/species-browser.js';
 import './components/dice-modal.js';
+import './components/about-modal.js';
 import { APP_VERSION } from './version.js';
 
 class DnDApp {

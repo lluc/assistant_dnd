@@ -110,6 +110,14 @@ class DndHeader extends HTMLElement {
                     transform: translateX(-50%);
                 }
 
+                .nav-about {
+                    margin-left: 0.5rem;
+                    border-left: 1px solid rgba(244, 228, 193, 0.2);
+                    padding-left: 1.1rem;
+                    opacity: 0.75;
+                }
+                .nav-about:hover { opacity: 1; }
+
                 nav button.active::after {
                     width: 80%;
                 }
@@ -239,6 +247,7 @@ class DndHeader extends HTMLElement {
                         <li><button data-page="species" class="nav-btn">Espèces</button></li>
                         <li><button data-page="favorites" class="nav-btn">Favoris</button></li>
                         <li><button data-page="dice" class="nav-btn">Dés</button></li>
+                        <li><button data-page="about" class="nav-btn nav-about">À propos</button></li>
                     </ul>
                 </nav>
             </header>
@@ -260,7 +269,13 @@ class DndHeader extends HTMLElement {
         navButtons.forEach(button => {
             button.addEventListener('click', (e) => {
                 const page = e.target.dataset.page;
-                this.navigate(page);
+
+                if (page === 'about') {
+                    document.dispatchEvent(new CustomEvent('open-about'));
+                } else {
+                    this.navigate(page);
+                }
+
                 // Fermer le menu après navigation sur mobile
                 this._menuOpen = false;
                 burger.classList.remove('open');
