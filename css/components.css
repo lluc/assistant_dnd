@@ -298,3 +298,232 @@ dice-roller {
 .modal-close:hover {
     background: #c82333;
 }
+
+/* Styles pour les modales de monstres */
+.monster-modal-header {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    align-items: flex-start;
+}
+
+.monster-modal-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+    background: var(--background-secondary);
+}
+
+.monster-modal-title {
+    flex: 1;
+    min-width: 0;
+}
+
+.monster-modal-title h2 {
+    margin: 0;
+    font-family: 'Cinzel', serif;
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    word-wrap: break-word;
+}
+
+/* Responsive pour mobiles */
+@media (max-width: 600px) {
+    .monster-modal-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .monster-modal-image {
+        width: 100px;
+        height: 100px;
+    }
+
+    .monster-modal-title h2 {
+        font-size: 1.5rem;
+    }
+
+    .modal-content {
+        max-width: 90vw;
+        padding: 1.5rem;
+    }
+}
+
+/* Styles pour les capacités de monstres dans les modales */
+.ability-block {
+    margin-bottom: 1rem;
+    padding: 0.8rem;
+    background: rgba(139, 69, 19, 0.1);
+    border-left: 3px solid var(--accent-color);
+    border-radius: 0 4px 4px 0;
+}
+
+.ability-block h4 {
+    margin: 0 0 0.5rem 0;
+    font-family: 'Cinzel', serif;
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.ability-block p {
+    margin: 0;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.abilities-row {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.8rem;
+    margin: 0.8rem 0;
+}
+
+.ability-col {
+    text-align: center;
+    padding: 0.5rem;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.ability-col strong {
+    display: block;
+    font-family: 'Cinzel', serif;
+    color: var(--accent-color);
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
+}
+
+@media (max-width: 600px) {
+    .abilities-row {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+
+    .ability-col {
+        padding: 0.3rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Image cliquable dans la modal */
+.clickable-image {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clickable-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Modal plein écran pour l'image */
+.fullscreen-image-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.fullscreen-image-container {
+    position: relative;
+    max-width: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.fullscreen-image {
+    max-width: 100%;
+    max-height: calc(100vh - 100px);
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    object-fit: contain;
+}
+
+.fullscreen-title {
+    color: white;
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.fullscreen-close {
+    position: absolute;
+    top: -50px;
+    right: -10px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.5rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    z-index: 2001;
+}
+
+.fullscreen-close:hover {
+    background: rgba(220, 53, 69, 1);
+    transform: scale(1.1);
+}
+
+.fullscreen-error {
+    color: white;
+    font-family: 'Crimson Text', serif;
+    font-size: 1.2rem;
+    text-align: center;
+    padding: 2rem;
+    background: rgba(139, 69, 19, 0.8);
+    border-radius: 8px;
+    border: 2px solid var(--border-color);
+}
+
+/* Support pour les gestes sur mobile */
+@media (max-width: 600px) {
+    .fullscreen-close {
+        top: 10px;
+        right: 10px;
+        width: 35px;
+        height: 35px;
+        font-size: 1.3rem;
+    }
+
+    .fullscreen-title {
+        font-size: 1.3rem;
+    }
+
+    .fullscreen-image {
+        max-height: calc(100vh - 80px);
+    }
+
+    .clickable-image:hover {
+        transform: none; /* Pas d'effet hover sur mobile */
+    }
+}
+}

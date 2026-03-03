@@ -3,6 +3,7 @@ class StorageManager {
         this.keys = {
             favorites: 'dnd-favorites',
             spellFavorites: 'dnd-spell-favorites',
+            monsterFavorites: 'dnd-monster-favorites',
             searchHistory: 'dnd-search-history',
             userPreferences: 'dnd-user-preferences',
             diceHistory: 'dnd-dice-history'
@@ -88,6 +89,47 @@ class StorageManager {
 
     isSpellFavorite(index) {
         const favorites = this.getSpellFavorites();
+        return favorites.includes(index);
+    }
+
+    getMonsterFavorites() {
+        try {
+            return JSON.parse(localStorage.getItem(this.keys.monsterFavorites) || '[]');
+        } catch (error) {
+            console.error('Failed to get monster favorites:', error);
+            return [];
+        }
+    }
+
+    addMonsterFavorite(index) {
+        try {
+            const favorites = this.getMonsterFavorites();
+            if (!favorites.includes(index)) {
+                favorites.push(index);
+                localStorage.setItem(this.keys.monsterFavorites, JSON.stringify(favorites));
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Failed to add monster favorite:', error);
+            return false;
+        }
+    }
+
+    removeMonsterFavorite(index) {
+        try {
+            const favorites = this.getMonsterFavorites();
+            const newFavorites = favorites.filter(fav => fav !== index);
+            localStorage.setItem(this.keys.monsterFavorites, JSON.stringify(newFavorites));
+            return true;
+        } catch (error) {
+            console.error('Failed to remove monster favorite:', error);
+            return false;
+        }
+    }
+
+    isMonsterFavorite(index) {
+        const favorites = this.getMonsterFavorites();
         return favorites.includes(index);
     }
 
@@ -195,6 +237,8 @@ class StorageManager {
         try {
             const data = {
                 favorites: this.getFavorites(),
+                spellFavorites: this.getSpellFavorites(),
+                monsterFavorites: this.getMonsterFavorites(),
                 searchHistory: this.getSearchHistory(),
                 userPreferences: this.getUserPreferences(),
                 diceHistory: this.getDiceHistory(),
@@ -214,7 +258,15 @@ class StorageManager {
             if (data.favorites && Array.isArray(data.favorites)) {
                 localStorage.setItem(this.keys.favorites, JSON.stringify(data.favorites));
             }
-            
+
+            if (data.spellFavorites && Array.isArray(data.spellFavorites)) {
+                localStorage.setItem(this.keys.spellFavorites, JSON.stringify(data.spellFavorites));
+            }
+
+            if (data.monsterFavorites && Array.isArray(data.monsterFavorites)) {
+                localStorage.setItem(this.keys.monsterFavorites, JSON.stringify(data.monsterFavorites));
+            }
+
             if (data.searchHistory && Array.isArray(data.searchHistory)) {
                 localStorage.setItem(this.keys.searchHistory, JSON.stringify(data.searchHistory));
             }
@@ -254,8 +306,8 @@ class StorageManager {
                 if (value) {
                     info[name] = {
                         size: new Blob([value]).size,
-                        items: key === this.keys.favorites || key === this.keys.searchHistory || key === this.keys.diceHistory 
-                            ? JSON.parse(value).length 
+                        items: key === this.keys.favorites || key === this.keys.spellFavorites || key === this.keys.monsterFavorites || key === this.keys.searchHistory || key === this.keys.diceHistory
+                            ? JSON.parse(value).length
                             : 1
                     };
                 }

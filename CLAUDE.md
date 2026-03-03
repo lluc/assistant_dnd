@@ -30,7 +30,7 @@ All UI is built with native Web Components in [js/components/](js/components/):
 - **[header.js](js/components/header.js)** — Navigation tabs, active state
 - **[equipment-search.js](js/components/equipment-search.js)** — Search input, category filters, results list
 - **[equipment-card.js](js/components/equipment-card.js)** — Equipment detail cards, modal, favorite toggle, unit conversions (ft→m, lbs→kg), French currency translation
-- **[dice-roller.js](js/components/dice-roller.js)** — Quick dice buttons (d4–d20, d100), custom rolls, history (50 entries), modifier support
+- **[dice-roller.js](js/components/dice-roller.js)** — Dice pool system: click dice buttons to compose multi-die combinations (e.g., 2d6 + 1d20 + modifier), pool chips, visual SVG results, reroll capability
 - **[spells-search.js](js/components/spells-search.js)** — Spell search with level filter, dispatches `spells-search-results`
 - **[spell-card.js](js/components/spell-card.js)** — Spell detail display, French component translation (V/S/M)
 - **[class-browser.js](js/components/class-browser.js)** — Class & subclass browser with proficiency details
@@ -38,7 +38,7 @@ All UI is built with native Web Components in [js/components/](js/components/):
 - **[dice-modal.js](js/components/dice-modal.js)** — Global overlay modal for quick dice rolls triggered from any page (see below)
 - **[about-modal.js](js/components/about-modal.js)** — Global overlay modal showing app version and credits, triggered by the "À propos" nav item
 
-Components communicate via custom DOM events (`navigation`, `search-results`, `favorite-toggled`, `show-details`, `spells-search-results`) dispatched up to `app.js`.
+Components communicate via custom DOM events (`navigation`, `search-results`, `favorite-toggled`, `show-details`, `spells-search-results`, `roll-dice`, `open-about`) dispatched up to `app.js` or document level.
 
 ### Dice Modal — Cross-Page Dice Rolls
 
@@ -52,6 +52,17 @@ document.dispatchEvent(new CustomEvent('roll-dice', {
 
 Supported notation: `[N]dX[+/-M]` (e.g. `"d20"`, `"2d6+3"`, `"1d8"`). The modal shows SVG die shapes, animates the roll, highlights crits/fumbles on d20, and saves to `storageManager.diceHistory`. Currently wired in `class-browser.js` (hit die badge).
 
+### About Modal — Version & Changelog
+
+The "À propos" nav item triggers a modal showing:
+- App version (from `APP_VERSION`)
+- Description and credits
+- Changelog from `js/changelog.js` (scrollable list of versions with feat/fix entries)
+
+```javascript
+document.dispatchEvent(new CustomEvent('open-about'));
+```
+
 ### Services
 
 - **[js/api.js](js/api.js)** — Wraps the D&D5E API (`https://www.dnd5eapi.co/api/2024`) with a 5-minute in-memory cache. Covers equipment, spells (list/details/by-level/search), classes (with subclasses), and species.
@@ -62,7 +73,7 @@ Supported notation: `[N]dX[+/-M]` (e.g. `"d20"`, `"2d6+3"`, `"1d8"`). The modal 
 
 ### PWA / Service Worker
 
-[sw.js](sw.js) uses a **cache-first** strategy. Cache name is versioned (`dnd-assistant-v15`) — increment this when assets change to trigger the update prompt in `app.js`. The HTTPS server is required to test the install prompt locally.
+[sw.js](sw.js) uses a **cache-first** strategy. Cache name is versioned (`dnd-assistant-v16`) — increment this when assets change to trigger the update prompt in `app.js`. The HTTPS server is required to test the install prompt locally.
 
 ### Styling
 
@@ -78,3 +89,9 @@ CSS variables for theming are defined on `:root` in `main.css`. BEM naming conve
 - **Commit format** — Conventional Commits: `type(scope): description` (types: feat, fix, docs, style, refactor, test, chore).
 - **No dependencies** — Do not add npm runtime packages. The project is intentionally zero-dependency.
 - **Shadow DOM** — Component styles live inside Shadow DOM; global CSS does not reach them. Use CSS parts or custom properties to style from outside if needed.
+
+## Version Management
+
+- Run `npm version patch|minor|major` to bump version (auto-updates `js/version.js` via post-version script)
+- Manually update `js/changelog.js` with new entries on each version bump
+- Increment SW cache version in `sw.js` (e.g., `v16` → `v17`) to trigger update prompts

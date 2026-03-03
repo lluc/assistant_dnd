@@ -245,6 +245,7 @@ class DndHeader extends HTMLElement {
                         <li><button data-page="spells" class="nav-btn">Sorts</button></li>
                         <li><button data-page="classes" class="nav-btn">Classes</button></li>
                         <li><button data-page="species" class="nav-btn">Espèces</button></li>
+                        <li><button data-page="monsters" class="nav-btn">Monstres</button></li>
                         <li><button data-page="favorites" class="nav-btn">Favoris</button></li>
                         <li><button data-page="dice" class="nav-btn">Dés</button></li>
                         <li><button data-page="about" class="nav-btn nav-about">À propos</button></li>

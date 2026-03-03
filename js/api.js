@@ -174,6 +174,78 @@ class DnDAPI {
     async getTraitDetails(index) {
         return this.fetchWithCache(`${this.spellsBaseURL}/traits/${index}`);
     }
+
+    async getMonstersList() {
+        const { MONSTERS_DATA } = await import('./data/monsters.js');
+        return {
+            count: MONSTERS_DATA.list.length,
+            results: MONSTERS_DATA.list
+        };
+    }
+
+    async getMonsterDetails(index) {
+        const { MONSTERS_DATA } = await import('./data/monsters.js');
+        const monster = MONSTERS_DATA.details[index];
+        if (!monster) {
+            throw new Error(`Monster ${index} not found`);
+        }
+        return monster;
+    }
+
+    async searchMonsters(query) {
+        try {
+            const { MONSTERS_DATA } = await import('./data/monsters.js');
+            const filtered = MONSTERS_DATA.list.filter(monster =>
+                monster.name.toLowerCase().includes(query.toLowerCase())
+            );
+            // Retourner les détails complets pour tous les résultats trouvés
+            return filtered.map(monster => MONSTERS_DATA.details[monster.index]).filter(Boolean);
+        } catch (error) {
+            console.error('Monster search error:', error);
+            return [];
+        }
+    }
+
+    async getMonstersByFilters(type = null, challengeRatingRange = null) {
+        try {
+            const { MONSTERS_DATA } = await import('./data/monsters.js');
+
+            // Charger tous les détails depuis les données statiques
+            let monsters = Object.values(MONSTERS_DATA.details);
+
+            // Apply filters
+            if (type) {
+                monsters = monsters.filter(monster => monster.type.toLowerCase() === type);
+            }
+
+            if (challengeRatingRange) {
+                monsters = monsters.filter(monster => {
+                    const cr = monster.challenge_rating;
+                    switch (challengeRatingRange) {
+                        case '0-1':
+                            return cr <= 1;
+                        case '2-5':
+                            return cr >= 2 && cr <= 5;
+                        case '6-10':
+                            return cr >= 6 && cr <= 10;
+                        case '11-15':
+                            return cr >= 11 && cr <= 15;
+                        case '16-20':
+                            return cr >= 16 && cr <= 20;
+                        case '21-30':
+                            return cr >= 21 && cr <= 30;
+                        default:
+                            return true;
+                    }
+                });
+            }
+
+            return monsters;
+        } catch (error) {
+            console.error('Monster filter error:', error);
+            return [];
+        }
+    }
 }
 
 export const dndAPI = new DnDAPI();

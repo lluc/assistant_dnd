@@ -6,6 +6,8 @@ import './components/spells-search.js';
 import './components/spell-card.js';
 import './components/class-browser.js';
 import './components/species-browser.js';
+import './components/monster-search.js';
+import './components/monster-card.js';
 import './components/dice-modal.js';
 import './components/about-modal.js';
 import { APP_VERSION } from './version.js';
@@ -103,6 +105,18 @@ class DnDApp {
                 this.showClassSubclass(e.detail.index);
             }
         });
+
+        document.addEventListener('monster-search-results', (e) => {
+            this.displayMonsterResults(e.detail.results);
+        });
+
+        document.addEventListener('monster-show-details', (e) => {
+            this.showMonsterDetails(e.detail.index);
+        });
+
+        document.addEventListener('monster-favorite-toggled', (e) => {
+            this.handleMonsterFavoriteToggle(e.detail);
+        });
     }
 
     setupRouting() {
@@ -191,14 +205,15 @@ class DnDApp {
         const { storageManager } = await import('./utils/storage.js');
         const equipmentFavorites = storageManager.getFavorites();
         const spellFavorites = storageManager.getSpellFavorites();
+        const monsterFavorites = storageManager.getMonsterFavorites();
 
-        if (equipmentFavorites.length === 0 && spellFavorites.length === 0) {
+        if (equipmentFavorites.length === 0 && spellFavorites.length === 0 && monsterFavorites.length === 0) {
             favoritesContainer.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">⭐</div>
                     <div class="empty-state-title">Aucun favori</div>
                     <div class="empty-state-text">
-                        Ajoutez des équipements ou des sorts à vos favoris pour les retrouver facilement ici.
+                        Ajoutez des équipements, sorts ou monstres à vos favoris pour les retrouver facilement ici.
                     </div>
                 </div>
             `;
@@ -245,6 +260,23 @@ class DnDApp {
                     favoritesContainer.appendChild(card);
                 });
             }
+
+            if (monsterFavorites.length > 0) {
+                const heading = document.createElement('h2');
+                heading.className = 'page-title';
+                heading.style.cssText = 'font-size: 1.3rem; margin: 2rem 0 1rem 0; grid-column: 1/-1;';
+                heading.textContent = 'Monstres favoris';
+                favoritesContainer.appendChild(heading);
+
+                const monsterDetails = await Promise.all(
+                    monsterFavorites.map(index => dndAPI.getMonsterDetails(index))
+                );
+                monsterDetails.forEach(monster => {
+                    const card = document.createElement('monster-card');
+                    card.setAttribute('monster-data', JSON.stringify(monster));
+                    favoritesContainer.appendChild(card);
+                });
+            }
         } catch (error) {
             console.error('Failed to load favorites:', error);
             favoritesContainer.innerHTML = `
@@ -265,6 +297,17 @@ class DnDApp {
 
         this.showNotification(
             detail.isFavorited ? 'Ajouté aux favoris' : 'Retiré des favoris',
+            'success'
+        );
+    }
+
+    handleMonsterFavoriteToggle(detail) {
+        if (this.currentPage === 'favorites') {
+            setTimeout(() => this.loadFavorites(), 100);
+        }
+
+        this.showNotification(
+            detail.isFavorited ? 'Monstre ajouté aux favoris' : 'Monstre retiré des favoris',
             'success'
         );
     }
@@ -932,6 +975,350 @@ class DnDApp {
             notification.style.opacity = '0';
             setTimeout(() => notification.remove(), 300);
         }, 3000);
+    }
+
+    async displayMonsterResults(resultData) {
+        const resultsContainer = document.getElementById('monsters-results');
+        const results = resultData.results || resultData;
+
+        if (!results || results.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🐉</div>
+                    <div class="empty-state-title">Aucun monstre trouvé</div>
+                    <div class="empty-state-text">
+                        Essayez de modifier votre recherche ou vos filtres pour explorer le bestiaire.
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // Clear container for new results
+        resultsContainer.innerHTML = '';
+        resultsContainer.classList.add('fade-in');
+
+        // Add results count
+        const countDiv = document.createElement('div');
+        countDiv.className = 'results-count';
+        countDiv.style.cssText = `
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 0.5rem 1rem;
+            background: rgba(139, 69, 19, 0.1);
+            border-radius: 4px;
+            font-family: 'Crimson Text', serif;
+            color: #8b4513;
+            margin-bottom: 1rem;
+        `;
+        countDiv.textContent = `${results.length} monstre${results.length > 1 ? 's' : ''} trouvé${results.length > 1 ? 's' : ''}`;
+        resultsContainer.appendChild(countDiv);
+
+        // Add all monster cards at once
+        results.forEach(monster => {
+            const card = document.createElement('monster-card');
+            card.setAttribute('monster-data', JSON.stringify(monster));
+            resultsContainer.appendChild(card);
+        });
+
+        setTimeout(() => {
+            resultsContainer.classList.remove('fade-in');
+        }, 300);
+    }
+
+    async showMonsterDetails(index) {
+        try {
+            const { dndAPI } = await import('./api.js');
+            const monster = await dndAPI.getMonsterDetails(index);
+            this.showMonsterModal(monster);
+        } catch (error) {
+            console.error('Failed to load monster details:', error);
+            this.showNotification('Erreur lors du chargement des détails', 'error');
+        }
+    }
+
+    showMonsterModal(monster) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay fade-in';
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-content scale-in';
+
+        // Récupérer le chemin de l'image du monstre
+        const imagePath = this.getMonsterImagePath(monster);
+
+        modalContent.innerHTML = `
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+            <div class="monster-modal-header">
+                <img
+                    src="${imagePath}"
+                    alt="${monster.name}"
+                    class="monster-modal-image clickable-image"
+                    onerror="this.style.display='none'"
+                    loading="lazy"
+                    title="Cliquer pour agrandir"
+                >
+                <div class="monster-modal-title">
+                    <h2>${monster.name}</h2>
+                </div>
+            </div>
+            <div class="equipment-details">
+                ${this.formatMonsterDetails(monster)}
+            </div>
+        `;
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+
+        // Event listener pour fermer la modal
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+
+        // Event listener pour agrandir l'image
+        const monsterImage = modalContent.querySelector('.clickable-image');
+        if (monsterImage) {
+            monsterImage.addEventListener('click', (e) => {
+                e.stopPropagation(); // Empêche la fermeture de la modal
+                this.showFullScreenImage(imagePath, monster.name);
+            });
+        }
+    }
+
+    formatMonsterDetails(monster) {
+        const MONSTER_TYPES_FR = {
+            'aberration': 'Aberration',
+            'beast': 'Bête',
+            'celestial': 'Céleste',
+            'construct': 'Artificiel',
+            'dragon': 'Dragon',
+            'elemental': 'Élémentaire',
+            'fey': 'Fée',
+            'fiend': 'Fiélon',
+            'giant': 'Géant',
+            'humanoid': 'Humanoïde',
+            'monstrosity': 'Monstruosité',
+            'ooze': 'Vase',
+            'plant': 'Plante',
+            'undead': 'Mort-vivant'
+        };
+
+        const type = MONSTER_TYPES_FR[monster.type.toLowerCase()] || monster.type;
+        const challengeRating = monster.challenge_rating === 0.125 ? '1/8' :
+                               monster.challenge_rating === 0.25 ? '1/4' :
+                               monster.challenge_rating === 0.5 ? '1/2' :
+                               monster.challenge_rating.toString();
+
+        let html = '<div class="details-grid">';
+
+        // Basic Stats
+        html += `
+            <div class="detail-section">
+                <h3>Informations de base</h3>
+                <p><strong>Type :</strong> ${type} (${monster.size || 'Inconnue'})</p>
+                <p><strong>Alignement :</strong> ${monster.alignment || 'Non spécifié'}</p>
+                <p><strong>Niveau de défi :</strong> ${challengeRating} (${(monster.xp || 0).toLocaleString()} XP)</p>
+            </div>
+        `;
+
+        // Combat Stats
+        const ac = monster.armor_class?.[0]?.value || monster.armor_class || 'N/A';
+        html += `
+            <div class="detail-section">
+                <h3>Statistiques de combat</h3>
+                <p><strong>Classe d'armure :</strong> ${ac}</p>
+                <p><strong>Points de vie :</strong> ${monster.hit_points || 'N/A'} (${monster.hit_dice || 'N/A'})</p>
+                <p><strong>Vitesse :</strong> ${this.formatMonsterSpeed(monster.speed)}</p>
+            </div>
+        `;
+
+        // Ability Scores
+        html += '<div class="detail-section"><h3>Caractéristiques</h3><div class="abilities-row">';
+        ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'].forEach(ability => {
+            const score = monster[ability.toLowerCase()] || 10;
+            const modifier = Math.floor((score - 10) / 2);
+            const modStr = modifier >= 0 ? `+${modifier}` : `${modifier}`;
+            html += `<div class="ability-col"><strong>${ability}</strong><br>${score} (${modStr})</div>`;
+        });
+        html += '</div></div>';
+
+        // Saving Throws
+        if (monster.proficiency_bonus && (monster.str || monster.dex || monster.con || monster.int || monster.wis || monster.cha)) {
+            html += '<div class="detail-section"><h3>Jets de sauvegarde</h3>';
+            const saves = [];
+            if (monster.constitution_save !== undefined) saves.push(`Constitution +${monster.constitution_save}`);
+            if (monster.wisdom_save !== undefined) saves.push(`Sagesse +${monster.wisdom_save}`);
+            if (monster.charisma_save !== undefined) saves.push(`Charisme +${monster.charisma_save}`);
+            html += `<p>${saves.join(', ') || 'Aucun bonus spécial'}</p></div>`;
+        }
+
+        // Skills
+        if (monster.skills && Object.keys(monster.skills).length > 0) {
+            html += '<div class="detail-section"><h3>Compétences</h3><p>';
+            const skills = Object.entries(monster.skills).map(([skill, bonus]) =>
+                `${skill.replace(/_/g, ' ')} +${bonus}`
+            );
+            html += skills.join(', ') + '</p></div>';
+        }
+
+        // Damage Resistances/Immunities
+        if (monster.damage_resistances && monster.damage_resistances.length > 0) {
+            html += `<div class="detail-section"><h3>Résistances aux dégâts</h3><p>${monster.damage_resistances.join(', ')}</p></div>`;
+        }
+        if (monster.damage_immunities && monster.damage_immunities.length > 0) {
+            html += `<div class="detail-section"><h3>Immunités aux dégâts</h3><p>${monster.damage_immunities.join(', ')}</p></div>`;
+        }
+
+        // Senses and Languages
+        if (monster.senses && Object.keys(monster.senses).length > 0) {
+            html += '<div class="detail-section"><h3>Sens</h3><p>';
+            const senses = Object.entries(monster.senses).map(([sense, range]) =>
+                `${sense.replace(/_/g, ' ')} ${range}`
+            );
+            html += senses.join(', ') + '</p></div>';
+        }
+
+        if (monster.languages) {
+            html += `<div class="detail-section"><h3>Langues</h3><p>${monster.languages || 'Aucune'}</p></div>`;
+        }
+
+        // Special Abilities
+        if (monster.special_abilities && monster.special_abilities.length > 0) {
+            html += '<div class="detail-section"><h3>Capacités spéciales</h3>';
+            monster.special_abilities.forEach(ability => {
+                html += `<div class="ability-block">`;
+                html += `<h4>${ability.name}</h4>`;
+                html += `<p>${this.parseMarkdown(ability.desc)}</p>`;
+                html += `</div>`;
+            });
+            html += '</div>';
+        }
+
+        // Actions
+        if (monster.actions && monster.actions.length > 0) {
+            html += '<div class="detail-section"><h3>Actions</h3>';
+            monster.actions.forEach(action => {
+                html += `<div class="ability-block">`;
+                html += `<h4>${action.name}</h4>`;
+                html += `<p>${this.parseMarkdown(action.desc)}</p>`;
+                html += `</div>`;
+            });
+            html += '</div>';
+        }
+
+        // Legendary Actions
+        if (monster.legendary_actions && monster.legendary_actions.length > 0) {
+            html += '<div class="detail-section"><h3>Actions légendaires</h3>';
+            if (monster.legendary_desc) {
+                html += `<p><em>${monster.legendary_desc}</em></p>`;
+            }
+            monster.legendary_actions.forEach(action => {
+                html += `<div class="ability-block">`;
+                html += `<h4>${action.name}</h4>`;
+                html += `<p>${this.parseMarkdown(action.desc)}</p>`;
+                html += `</div>`;
+            });
+            html += '</div>';
+        }
+
+        html += '</div>';
+        return html;
+    }
+
+    formatMonsterSpeed(speed) {
+        if (!speed) return 'Non spécifié';
+        const speedText = [];
+        if (speed.walk) speedText.push(`${speed.walk} à pied`);
+        if (speed.fly) speedText.push(`${speed.fly} en vol`);
+        if (speed.swim) speedText.push(`${speed.swim} en nageant`);
+        if (speed.climb) speedText.push(`${speed.climb} en grimpant`);
+        if (speed.burrow) speedText.push(`${speed.burrow} en creusant`);
+        return speedText.join(', ');
+    }
+
+    getMonsterImagePath(monster) {
+        const MONSTER_TYPES_FOLDERS = {
+            'aberration': 'divers',
+            'beast': 'bêtes',
+            'celestial': 'célestes',
+            'construct': 'divers',
+            'dragon': 'dragons',
+            'elemental': 'élémentaires',
+            'fey': 'fées',
+            'fiend': 'fiélons',
+            'giant': 'divers',
+            'humanoid': 'humanoïdes',
+            'monstrosity': 'divers',
+            'ooze': 'divers',
+            'plant': 'divers',
+            'undead': 'morts-vivants'
+        };
+
+        const typeKey = monster.type.toLowerCase();
+        const typeFolder = MONSTER_TYPES_FOLDERS[typeKey] || 'divers';
+        const filename = monster.index.replace(/-/g, '_') + '.webp';
+        return `assets/images/monsters/${typeFolder}/${filename}`;
+    }
+
+    showFullScreenImage(imagePath, monsterName) {
+        // Créer la modal plein écran
+        const fullscreenModal = document.createElement('div');
+        fullscreenModal.className = 'fullscreen-image-modal fade-in';
+
+        fullscreenModal.innerHTML = `
+            <div class="fullscreen-image-container">
+                <button class="fullscreen-close" aria-label="Fermer" title="Fermer (Échap)">×</button>
+                <img
+                    src="${imagePath}"
+                    alt="${monsterName}"
+                    class="fullscreen-image"
+                    onerror="this.parentElement.innerHTML='<div class=\\"fullscreen-error\\">Image non disponible</div>'"
+                >
+                <div class="fullscreen-title">${monsterName}</div>
+            </div>
+        `;
+
+        document.body.appendChild(fullscreenModal);
+
+        // Event listeners pour fermer
+        const closeBtn = fullscreenModal.querySelector('.fullscreen-close');
+        const container = fullscreenModal.querySelector('.fullscreen-image-container');
+
+        // Fermer avec le bouton X
+        closeBtn.addEventListener('click', () => {
+            fullscreenModal.remove();
+        });
+
+        // Fermer en cliquant en dehors de l'image
+        fullscreenModal.addEventListener('click', (e) => {
+            if (e.target === fullscreenModal) {
+                fullscreenModal.remove();
+            }
+        });
+
+        // Fermer avec Échap
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                fullscreenModal.remove();
+                document.removeEventListener('keydown', handleKeyDown);
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+
+        // Nettoyer l'event listener quand la modal est supprimée
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.removedNodes.forEach((node) => {
+                    if (node === fullscreenModal) {
+                        document.removeEventListener('keydown', handleKeyDown);
+                        observer.disconnect();
+                    }
+                });
+            });
+        });
+        observer.observe(document.body, { childList: true });
     }
 
     registerServiceWorker() {

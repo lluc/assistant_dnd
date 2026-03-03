@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dnd-assistant-v16';
+const CACHE_NAME = 'dnd-assistant-v18';
 const OFFLINE_URL = './';
 
 const ASSETS_TO_CACHE = [
@@ -19,10 +19,13 @@ const ASSETS_TO_CACHE = [
   './js/components/spell-card.js',
   './js/components/class-browser.js',
   './js/components/species-browser.js',
+  './js/components/monster-search.js',
+  './js/components/monster-card.js',
   './js/components/dice-modal.js',
   './js/components/about-modal.js',
   './js/utils/storage.js',
   './js/utils/performance.js',
+  './js/data/monsters.js',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png'
 ];

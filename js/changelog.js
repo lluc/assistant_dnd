@@ -6,6 +6,17 @@
  */
 export const CHANGELOG = [
     {
+        version: '1.3.0',
+        date: '2026-03-03',
+        entries: [
+            { type: 'feat', text: 'Migration des monstres vers des données statiques (334 monstres)' },
+            { type: 'feat', text: 'Recherche et filtres de monstres instantanés (0ms vs 2-5s)' },
+            { type: 'feat', text: 'Bestiaire entièrement fonctionnel hors-ligne' },
+            { type: 'fix',  text: 'Élimination des problèmes de rate limiting de l\'API' },
+            { type: 'fix',  text: 'Suppression des délais de chargement pour les monstres' },
+        ],
+    },
+    {
         version: '1.2.0',
         date: '2026-02-26',
         entries: [
