@@ -1174,9 +1174,12 @@ class DnDApp {
         // Senses and Languages
         if (monster.senses && Object.keys(monster.senses).length > 0) {
             html += '<div class="detail-section"><h3>Sens</h3><p>';
-            const senses = Object.entries(monster.senses).map(([sense, range]) =>
-                `${sense.replace(/_/g, ' ')} ${this.convertMonsterRange(range)}`
-            );
+            const senses = Object.entries(monster.senses).map(([sense, range]) => {
+                const formattedSense = sense.replace(/_/g, ' ');
+                // Si c'est une chaîne avec des mesures, convertir. Sinon, utiliser tel quel.
+                const formattedRange = typeof range === 'string' ? this.convertMonsterRange(range) : range;
+                return `${formattedSense} ${formattedRange}`;
+            });
             html += senses.join(', ') + '</p></div>';
         }
 
@@ -1235,7 +1238,7 @@ class DnDApp {
     }
 
     convertMonsterRange(text) {
-        if (!text) return text;
+        if (!text || typeof text !== 'string') return text;
 
         // Convert feet measurements (e.g., "30 ft." → "30 ft. (9 m)")
         return text.replace(/(\d+)\s*ft\.?(?!\w)/g, (match, feet) => {

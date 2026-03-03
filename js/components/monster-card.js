@@ -99,7 +99,7 @@ class MonsterCard extends HTMLElement {
     }
 
     convertRange(text) {
-        if (!text) return text;
+        if (!text || typeof text !== 'string') return text;
 
         // Convert feet measurements (e.g., "30 ft." → "30 ft. (9 m)")
         return text.replace(/(\d+)\s*ft\.?(?!\w)/g, (match, feet) => {
