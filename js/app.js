@@ -1175,7 +1175,8 @@ class DnDApp {
         if (monster.senses && Object.keys(monster.senses).length > 0) {
             html += '<div class="detail-section"><h3>Sens</h3><p>';
             const senses = Object.entries(monster.senses).map(([sense, range]) => {
-                const formattedSense = sense.replace(/_/g, ' ');
+                // Assurer que sense est une chaîne de caractères
+                const formattedSense = String(sense).replace(/_/g, ' ');
                 // Si c'est une chaîne avec des mesures, convertir. Sinon, utiliser tel quel.
                 const formattedRange = typeof range === 'string' ? this.convertMonsterRange(range) : range;
                 return `${formattedSense} ${formattedRange}`;
@@ -1184,7 +1185,8 @@ class DnDApp {
         }
 
         if (monster.languages) {
-            html += `<div class="detail-section"><h3>Langues</h3><p>${this.convertMonsterRange(monster.languages) || 'Aucune'}</p></div>`;
+            const languages = monster.languages ? this.convertMonsterRange(monster.languages) : 'Aucune';
+            html += `<div class="detail-section"><h3>Langues</h3><p>${languages}</p></div>`;
         }
 
         // Special Abilities
@@ -1192,8 +1194,9 @@ class DnDApp {
             html += '<div class="detail-section"><h3>Capacités spéciales</h3>';
             monster.special_abilities.forEach(ability => {
                 html += `<div class="ability-block">`;
-                html += `<h4>${ability.name}</h4>`;
-                html += `<p>${this.parseMarkdown(this.convertMonsterRange(ability.desc))}</p>`;
+                html += `<h4>${ability.name || 'Capacité'}</h4>`;
+                const desc = ability.desc ? this.convertMonsterRange(ability.desc) : '';
+                html += `<p>${this.parseMarkdown(desc)}</p>`;
                 html += `</div>`;
             });
             html += '</div>';
@@ -1204,8 +1207,9 @@ class DnDApp {
             html += '<div class="detail-section"><h3>Actions</h3>';
             monster.actions.forEach(action => {
                 html += `<div class="ability-block">`;
-                html += `<h4>${action.name}</h4>`;
-                html += `<p>${this.parseMarkdown(this.convertMonsterRange(action.desc))}</p>`;
+                html += `<h4>${action.name || 'Action'}</h4>`;
+                const desc = action.desc ? this.convertMonsterRange(action.desc) : '';
+                html += `<p>${this.parseMarkdown(desc)}</p>`;
                 html += `</div>`;
             });
             html += '</div>';
@@ -1215,12 +1219,14 @@ class DnDApp {
         if (monster.legendary_actions && monster.legendary_actions.length > 0) {
             html += '<div class="detail-section"><h3>Actions légendaires</h3>';
             if (monster.legendary_desc) {
-                html += `<p><em>${this.convertMonsterRange(monster.legendary_desc)}</em></p>`;
+                const legendaryDesc = monster.legendary_desc ? this.convertMonsterRange(monster.legendary_desc) : '';
+                html += `<p><em>${legendaryDesc}</em></p>`;
             }
             monster.legendary_actions.forEach(action => {
                 html += `<div class="ability-block">`;
-                html += `<h4>${action.name}</h4>`;
-                html += `<p>${this.parseMarkdown(this.convertMonsterRange(action.desc))}</p>`;
+                html += `<h4>${action.name || 'Action légendaire'}</h4>`;
+                const desc = action.desc ? this.convertMonsterRange(action.desc) : '';
+                html += `<p>${this.parseMarkdown(desc)}</p>`;
                 html += `</div>`;
             });
             html += '</div>';
@@ -1238,7 +1244,10 @@ class DnDApp {
     }
 
     convertMonsterRange(text) {
-        if (!text || typeof text !== 'string') return text;
+        if (!text || typeof text !== 'string') {
+            console.warn('convertMonsterRange received non-string:', typeof text, text);
+            return text;
+        }
 
         // Convert feet measurements (e.g., "30 ft." → "30 ft. (9 m)")
         return text.replace(/(\d+)\s*ft\.?(?!\w)/g, (match, feet) => {
