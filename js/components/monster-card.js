@@ -91,14 +91,31 @@ class MonsterCard extends HTMLElement {
         return cr.toString();
     }
 
+    // Conversions de mesures impériales vers métriques
+    convertFeetToMeters(value) {
+        // 1 foot = 0.3048 meters, arrondi à l'entier le plus proche
+        const meters = Math.round(value * 0.3048);
+        return meters;
+    }
+
+    convertRange(text) {
+        if (!text) return text;
+
+        // Convert feet measurements (e.g., "30 ft." → "30 ft. (9 m)")
+        return text.replace(/(\d+)\s*ft\.?(?!\w)/g, (match, feet) => {
+            const meters = this.convertFeetToMeters(parseInt(feet));
+            return `${feet} ft. (${meters} m)`;
+        });
+    }
+
     formatSpeed(speed) {
         if (!speed) return 'Non spécifié';
         const speedText = [];
-        if (speed.walk) speedText.push(`${speed.walk} à pied`);
-        if (speed.fly) speedText.push(`${speed.fly} en vol`);
-        if (speed.swim) speedText.push(`${speed.swim} en nageant`);
-        if (speed.climb) speedText.push(`${speed.climb} en grimpant`);
-        if (speed.burrow) speedText.push(`${speed.burrow} en creusant`);
+        if (speed.walk) speedText.push(`${this.convertRange(speed.walk)} à pied`);
+        if (speed.fly) speedText.push(`${this.convertRange(speed.fly)} en vol`);
+        if (speed.swim) speedText.push(`${this.convertRange(speed.swim)} en nageant`);
+        if (speed.climb) speedText.push(`${this.convertRange(speed.climb)} en grimpant`);
+        if (speed.burrow) speedText.push(`${this.convertRange(speed.burrow)} en creusant`);
         return speedText.join(', ');
     }
 

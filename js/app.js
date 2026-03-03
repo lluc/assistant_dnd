@@ -1175,13 +1175,13 @@ class DnDApp {
         if (monster.senses && Object.keys(monster.senses).length > 0) {
             html += '<div class="detail-section"><h3>Sens</h3><p>';
             const senses = Object.entries(monster.senses).map(([sense, range]) =>
-                `${sense.replace(/_/g, ' ')} ${range}`
+                `${sense.replace(/_/g, ' ')} ${this.convertMonsterRange(range)}`
             );
             html += senses.join(', ') + '</p></div>';
         }
 
         if (monster.languages) {
-            html += `<div class="detail-section"><h3>Langues</h3><p>${monster.languages || 'Aucune'}</p></div>`;
+            html += `<div class="detail-section"><h3>Langues</h3><p>${this.convertMonsterRange(monster.languages) || 'Aucune'}</p></div>`;
         }
 
         // Special Abilities
@@ -1190,7 +1190,7 @@ class DnDApp {
             monster.special_abilities.forEach(ability => {
                 html += `<div class="ability-block">`;
                 html += `<h4>${ability.name}</h4>`;
-                html += `<p>${this.parseMarkdown(ability.desc)}</p>`;
+                html += `<p>${this.parseMarkdown(this.convertMonsterRange(ability.desc))}</p>`;
                 html += `</div>`;
             });
             html += '</div>';
@@ -1202,7 +1202,7 @@ class DnDApp {
             monster.actions.forEach(action => {
                 html += `<div class="ability-block">`;
                 html += `<h4>${action.name}</h4>`;
-                html += `<p>${this.parseMarkdown(action.desc)}</p>`;
+                html += `<p>${this.parseMarkdown(this.convertMonsterRange(action.desc))}</p>`;
                 html += `</div>`;
             });
             html += '</div>';
@@ -1212,12 +1212,12 @@ class DnDApp {
         if (monster.legendary_actions && monster.legendary_actions.length > 0) {
             html += '<div class="detail-section"><h3>Actions légendaires</h3>';
             if (monster.legendary_desc) {
-                html += `<p><em>${monster.legendary_desc}</em></p>`;
+                html += `<p><em>${this.convertMonsterRange(monster.legendary_desc)}</em></p>`;
             }
             monster.legendary_actions.forEach(action => {
                 html += `<div class="ability-block">`;
                 html += `<h4>${action.name}</h4>`;
-                html += `<p>${this.parseMarkdown(action.desc)}</p>`;
+                html += `<p>${this.parseMarkdown(this.convertMonsterRange(action.desc))}</p>`;
                 html += `</div>`;
             });
             html += '</div>';
@@ -1227,14 +1227,31 @@ class DnDApp {
         return html;
     }
 
+    // Conversion de mesures impériales vers métriques pour monstres
+    convertFeetToMeters(value) {
+        // 1 foot = 0.3048 meters, arrondi à l'entier le plus proche
+        const meters = Math.round(value * 0.3048);
+        return meters;
+    }
+
+    convertMonsterRange(text) {
+        if (!text) return text;
+
+        // Convert feet measurements (e.g., "30 ft." → "30 ft. (9 m)")
+        return text.replace(/(\d+)\s*ft\.?(?!\w)/g, (match, feet) => {
+            const meters = this.convertFeetToMeters(parseInt(feet));
+            return `${feet} ft. (${meters} m)`;
+        });
+    }
+
     formatMonsterSpeed(speed) {
         if (!speed) return 'Non spécifié';
         const speedText = [];
-        if (speed.walk) speedText.push(`${speed.walk} à pied`);
-        if (speed.fly) speedText.push(`${speed.fly} en vol`);
-        if (speed.swim) speedText.push(`${speed.swim} en nageant`);
-        if (speed.climb) speedText.push(`${speed.climb} en grimpant`);
-        if (speed.burrow) speedText.push(`${speed.burrow} en creusant`);
+        if (speed.walk) speedText.push(`${this.convertMonsterRange(speed.walk)} à pied`);
+        if (speed.fly) speedText.push(`${this.convertMonsterRange(speed.fly)} en vol`);
+        if (speed.swim) speedText.push(`${this.convertMonsterRange(speed.swim)} en nageant`);
+        if (speed.climb) speedText.push(`${this.convertMonsterRange(speed.climb)} en grimpant`);
+        if (speed.burrow) speedText.push(`${this.convertMonsterRange(speed.burrow)} en creusant`);
         return speedText.join(', ');
     }
 
