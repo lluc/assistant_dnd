@@ -400,6 +400,32 @@ class DnDApp {
             .replace(/_(.+?)_/g, '<em>$1</em>');
     }
 
+    makeNotationClickable(text, context = '') {
+        if (!text || typeof text !== 'string') return text;
+
+        // Points de vie format: "135 (18d10+36)"
+        text = text.replace(/(\d+)\s*\((\d+d\d+(?:[+\-]\d+)?)\)/g,
+            (match, value, notation) => {
+                const cleanNotation = notation.replace(/\s/g, '');
+                return `${value} (<span class="clickable-dice"
+                            data-notation="${cleanNotation}"
+                            data-label="${context} — ${cleanNotation}">${notation}</span>)`;
+            }
+        );
+
+        // Dégâts format: "15 (3d6 + 5) damage"
+        text = text.replace(/(\d+)\s*\(([^)]+d\d+[^)]*)\)(\s*\w+\s+damage)/g,
+            (match, value, diceExpr, damageType) => {
+                const cleanNotation = diceExpr.replace(/\s/g, '');
+                return `${value} (<span class="clickable-dice"
+                            data-notation="${cleanNotation}"
+                            data-label="${context} — ${cleanNotation}">${diceExpr}</span>)${damageType}`;
+            }
+        );
+
+        return text;
+    }
+
     formatSpellDetails(spell) {
         const COMPONENTS_FR = { V: 'Verbale', S: 'Somatique', M: 'Matérielle' };
         let html = '<div class="details-grid">';
@@ -1085,6 +1111,21 @@ class DnDApp {
                 this.showFullScreenImage(imagePath, monster.name);
             });
         }
+
+        // Event listeners pour les dés cliquables
+        setTimeout(() => {
+            modalContent.querySelectorAll('.clickable-dice').forEach(diceElement => {
+                diceElement.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const notation = diceElement.dataset.notation;
+                    const label = diceElement.dataset.label || notation;
+
+                    document.dispatchEvent(new CustomEvent('roll-dice', {
+                        detail: { notation, label }
+                    }));
+                });
+            });
+        }, 0);
     }
 
     formatMonsterDetails(monster) {
@@ -1129,7 +1170,10 @@ class DnDApp {
             <div class="detail-section">
                 <h3>Statistiques de combat</h3>
                 <p><strong>Classe d'armure :</strong> ${ac}</p>
-                <p><strong>Points de vie :</strong> ${monster.hit_points || 'N/A'} (${monster.hit_dice || 'N/A'})</p>
+                <p><strong>Points de vie :</strong> ${this.makeNotationClickable(
+                    `${monster.hit_points || 'N/A'} (${monster.hit_points_roll || monster.hit_dice || 'N/A'})`,
+                    'Points de vie'
+                )}</p>
                 <p><strong>Vitesse :</strong> ${this.formatMonsterSpeed(monster.speed)}</p>
             </div>
         `;
@@ -1196,7 +1240,8 @@ class DnDApp {
                 html += `<div class="ability-block">`;
                 html += `<h4>${ability.name || 'Capacité'}</h4>`;
                 const desc = ability.desc ? this.convertMonsterRange(ability.desc) : '';
-                html += `<p>${this.parseMarkdown(desc)}</p>`;
+                const clickableDesc = this.makeNotationClickable(desc, ability.name || 'Capacité spéciale');
+                html += `<p>${this.parseMarkdown(clickableDesc)}</p>`;
                 html += `</div>`;
             });
             html += '</div>';
@@ -1209,7 +1254,8 @@ class DnDApp {
                 html += `<div class="ability-block">`;
                 html += `<h4>${action.name || 'Action'}</h4>`;
                 const desc = action.desc ? this.convertMonsterRange(action.desc) : '';
-                html += `<p>${this.parseMarkdown(desc)}</p>`;
+                const clickableDesc = this.makeNotationClickable(desc, action.name || 'Action');
+                html += `<p>${this.parseMarkdown(clickableDesc)}</p>`;
                 html += `</div>`;
             });
             html += '</div>';
@@ -1226,7 +1272,8 @@ class DnDApp {
                 html += `<div class="ability-block">`;
                 html += `<h4>${action.name || 'Action légendaire'}</h4>`;
                 const desc = action.desc ? this.convertMonsterRange(action.desc) : '';
-                html += `<p>${this.parseMarkdown(desc)}</p>`;
+                const clickableDesc = this.makeNotationClickable(desc, action.name || 'Action légendaire');
+                html += `<p>${this.parseMarkdown(clickableDesc)}</p>`;
                 html += `</div>`;
             });
             html += '</div>';

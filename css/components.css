@@ -98,6 +98,45 @@ dice-roller {
     animation: scaleIn 0.3s ease-out;
 }
 
+/* Dés cliquables dans les fiches de monstres */
+.clickable-dice {
+    display: inline-block;
+    padding: 0.1rem 0.3rem;
+    background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%);
+    color: #f4e4c1;
+    border: 1px solid #654321;
+    border-radius: 3px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.clickable-dice:hover {
+    background: linear-gradient(135deg, #a0522d 0%, #8b4513 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.clickable-dice::after {
+    content: '🎲';
+    font-size: 0.7em;
+    margin-left: 0.2rem;
+    opacity: 0.8;
+}
+
+/* Responsive mobile */
+@media (max-width: 768px) {
+    .clickable-dice {
+        padding: 0.2rem 0.4rem;
+        min-height: 32px;
+        display: inline-flex;
+        align-items: center;
+    }
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
