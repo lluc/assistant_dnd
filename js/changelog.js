@@ -6,6 +6,16 @@
  */
 export const CHANGELOG = [
     {
+        version: '1.4.0',
+        date: '2026-03-03',
+        entries: [
+            { type: 'feat', text: 'Dés cliquables dans les fiches de monstres (points de vie, actions, capacités)' },
+            { type: 'feat', text: 'Intégration avec le système de modal de dés existant' },
+            { type: 'feat', text: 'Interface tactile optimisée pour mobile avec cibles de 32px' },
+            { type: 'feat', text: 'Libellés contextuels dans l\'historique de dés (ex: "Points de vie — 18d10+36")' },
+        ],
+    },
+    {
         version: '1.3.0',
         date: '2026-03-03',
         entries: [
